@@ -54,10 +54,22 @@ picture model =
   Collage.collage (2*scale) (2*scale)
            [ edge Color.lightGrey (Vec2.vec2 1 0)
            , edge Color.lightGrey (Vec2.vec2 0 1)
+           , drawShapes theShapes
            , drawBounds theBoundary
            ]
 
-    
+
+drawShapes : List (List Vec2) -> Collage.Form
+drawShapes shapes =
+  let
+    drawShape (_, fillColor) vecs =
+      List.map (Vec2.toTuple) vecs
+        |> Collage.polygon
+        |> Collage.filled fillColor
+  in
+    Collage.group (List.map2 drawShape palette shapes)
+
+  
 drawBounds : Boundary -> Collage.Form
 drawBounds boundary  =
   let
@@ -125,24 +137,40 @@ detectCollision boundary testPoint =
       
 theBoundary : Boundary
 theBoundary =
+  detectBoundary theShapes
+
+
+theShapes : List (List Vec2)
+theShapes =
+  List.map (List.map Vec2.fromTuple)
+        [ [ (-90, 30), (-70, 0), (-60, 50) ]
+        , [ (50, -25), (50, -85), (90, -75), (90, -15) ]
+        ]
+
+
+detectBoundary : List (List Vec2) -> Boundary
+detectBoundary =
   let
-    side a b =
-      { keyPoint = Vec2.fromTuple a
-      , normal = Vec2.fromTuple b
+    roll vertexes =
+      (List.drop 1 vertexes) ++ (List.take 1 vertexes)
+
+    toSegments vertexes =
+      if | List.length vertexes >= 3 -> List.map2 (,) vertexes (roll vertexes)
+         | otherwise -> []
+    
+    detectNormal a b =
+      let (sX, sY) = Vec2.toTuple (Vec2.sub a b)
+      in Vec2.fromTuple (-sY, sX)
+    
+    detectSide (a, b) =
+      { keyPoint = a
+      , normal = detectNormal a b
       }
+    
+    detectHull vertexes =
+      List.map detectSide (toSegments vertexes)
   in
-    [ [ side (-60, 20) (10, 0)
-      , side (-70, 40) (-3, 10)
-      , side (-70, 10) (-10, -10)
-      ]
-    , [ side (70, -20) (-5, 10)
-      , side (70, -80) (5, -10)
-      , side (50, -50) (-10, -1)
-      , side (90, -50) (10, 1)
-      ]
-    , [ side (150, 150) (-10, -10)
-      ]
-    ]
+    List.map detectHull
 
 
 palette : List (Color, Color)
