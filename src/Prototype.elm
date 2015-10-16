@@ -8,6 +8,7 @@ import Mouse
 import Text
 import String
 
+import Collision2D
 
 main : Signal Element.Element
 main = 
@@ -27,7 +28,7 @@ update up model =
   case up of
     CursorAt pos ->
       { model | position <- pos
-              , hit <- detectCollision theBoundary pos
+              , hit <- Collision2D.isInside theBoundary pos
       }
 
 
@@ -124,15 +125,6 @@ text model =
               ]
   in
     modelText |> Element.leftAligned
-
-
-detectCollision : Boundary -> Vec2 -> Bool
-detectCollision boundary testPoint =
-  let
-    isInside { keyPoint, normal } =
-      Vec2.dot normal (Vec2.sub testPoint keyPoint) <= 0
-  in
-    List.any (List.all isInside) boundary
       
       
 theBoundary : Boundary
