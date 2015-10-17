@@ -71,7 +71,7 @@ drawShapes shapes =
     Collage.group (List.map2 drawShape palette shapes)
 
   
-drawBounds : Boundary -> Collage.Form
+drawBounds : List Collision2D.Hull -> Collage.Form
 drawBounds boundary  =
   let
     drawSide (pointColor, edgeColor) { keyPoint, normal } =
@@ -90,7 +90,7 @@ drawBounds boundary  =
 
 ray : Vec2 -> Collage.Form
 ray vec =
-  line Collage.defaultLine (0, 0) (Vec2.toTuple vec)
+  line Collage.defaultLine (0, 0) (Vec2.toTuple (Vec2.scale 25 vec))
 
 
 edge : Color -> Vec2 -> Collage.Form
@@ -127,42 +127,17 @@ text model =
     modelText |> Element.leftAligned
       
       
-theBoundary : Boundary
+theBoundary : List Collision2D.Hull
 theBoundary =
-  detectBoundary theShapes
+  List.map Collision2D.fromVertexes theShapes
 
 
 theShapes : List (List Vec2)
 theShapes =
   List.map (List.map Vec2.fromTuple)
-        [ [ (-90, 30), (-70, 0), (-60, 50) ]
-        , [ (50, -25), (50, -85), (90, -75), (90, -15) ]
+        [ [ (-90, 30), (-60, 50), (-70, 0) ]
+        , [ (50, -85), (50, -25), (90, -15), (90, -75) ]
         ]
-
-
-detectBoundary : List (List Vec2) -> Boundary
-detectBoundary =
-  let
-    roll vertexes =
-      (List.drop 1 vertexes) ++ (List.take 1 vertexes)
-
-    toSegments vertexes =
-      if | List.length vertexes >= 3 -> List.map2 (,) vertexes (roll vertexes)
-         | otherwise -> []
-    
-    detectNormal a b =
-      let (sX, sY) = Vec2.toTuple (Vec2.sub a b)
-      in Vec2.fromTuple (-sY, sX)
-    
-    detectSide (a, b) =
-      { keyPoint = a
-      , normal = detectNormal a b
-      }
-    
-    detectHull vertexes =
-      List.map detectSide (toSegments vertexes)
-  in
-    List.map detectHull
 
 
 palette : List (Color, Color)
@@ -187,18 +162,4 @@ type Update =
 type alias Model =
   { position : Vec2
   , hit : Bool
-  }
-
-                 
-type alias Boundary =
-  List Hull
-
-       
-type alias Hull =
-  List Side
-
-       
-type alias Side =
-  { keyPoint : Vec2
-  , normal : Vec2
   }
