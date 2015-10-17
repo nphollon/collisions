@@ -1,7 +1,7 @@
 module Main where
 
-import ElmTest.Test exposing (Test, test, suite)
-import ElmTest.Assertion exposing (assert)
+import ElmTest.Test as Test exposing (Test, test, suite)
+import ElmTest.Assertion exposing (assert, assertEqual)
 import ElmTest.Runner.Element as GraphicsRunner
 import ElmTest.Runner.Console as ConsoleRunner
 import IO.Runner
@@ -10,25 +10,32 @@ import Math.Vector2 as Vec2 exposing (Vec2)
 
 import Collision2D as C2D
 
-
-
 allTests : Test
 allTests =
-  suite "2D collisions"
-          [ noSides
-          , oneSide
-          , twoSidesOneHull
-          , twoSidesTwoHulls
-          , badArguments
+  suite "All tests"
+          [ suite "2D collision"
+                    [ noSides
+                    , oneSide
+                    , twoSidesOneHull
+                    , twoSidesTwoHulls
+                    ]
+          , suite "2D hull construction"
+                    [ fromSegments
+                    , fromVertexes
+                    ]
           ]
 
 
 noSides : Test
 noSides =
   suite "Empty boundary"
-          [ test "Point is not inside a boundary with no sides"
+          [ test "Point is not inside a hull with no sides"
                    <| assert
-                   <| C2D.isOutside [[]] (Vec2.vec2 0 0)                  
+                   <| C2D.isOutside [[]] (Vec2.vec2 0 0)
+                      
+          , test "Point is not inside a boundary with no hulls"
+                   <| assert
+                   <| C2D.isOutside [] (Vec2.vec2 0 0)                  
           ]
   
 oneSide : Test
@@ -117,16 +124,49 @@ twoSidesTwoHulls =
             ]
 
 
-badArguments : Test
-badArguments =
+fromSegments : Test
+fromSegments =
   let
-    nullNormal =
-      [[ { keyPoint = Vec2.vec2 0 0, normal = Vec2.vec2 0 0 } ]]
+    segments =
+      [ (Vec2.vec2 0 0, Vec2.vec2 0 2)
+      , (Vec2.vec2 0 1, Vec2.vec2 1 1)
+      ]
+
+    expectedHull =
+      [ { keyPoint = Vec2.vec2 0 0, normal = Vec2.vec2 -1 0 }
+      , { keyPoint = Vec2.vec2 0 1, normal = Vec2.vec2 0 1 }
+      ]
   in
-    suite "Malformed arguments"
-            [ test "Point always outside a side with null normal"
-                     <| assert
-                     <| C2D.isOutside nullNormal (Vec2.vec2 0 0)
+    test "Making a hull from a list of line segments"
+           <| assertEqual (C2D.fromSegments segments) expectedHull
+
+
+fromVertexes : Test
+fromVertexes =
+  let
+    shortList =
+      [ Vec2.vec2 0 0
+      , Vec2.vec2 1 1
+      ]
+
+    triangleVertexes =
+      [ Vec2.vec2 0 0
+      , Vec2.vec2 4 3
+      , Vec2.vec2 4 0
+      ]
+
+    triangleSides =
+      [ { keyPoint = Vec2.vec2 0 0, normal = Vec2.vec2 -0.6 0.8 }
+      , { keyPoint = Vec2.vec2 4 3, normal = Vec2.vec2 1 0 }
+      , { keyPoint = Vec2.vec2 4 0, normal = Vec2.vec2 0 -1 }
+      ]
+  in
+    suite "Making a hull from a list of points"
+            [ test "Two or fewer points returns an empty hull"
+                     <| assertEqual (C2D.fromVertexes shortList) []
+
+            , test "Three or more points returns sides connecting all in series"
+                     <| assertEqual (C2D.fromVertexes triangleVertexes) triangleSides
             ]
     
             

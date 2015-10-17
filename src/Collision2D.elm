@@ -1,13 +1,14 @@
-module Collision2D (isOutside, isInside, Boundary, Side) where
+module Collision2D (isOutside, isInside, fromSegments, fromVertexes,
+                             Hull, Side) where
 
 import Math.Vector2 as Vec2 exposing (Vec2)
 
 
-isOutside : Boundary -> Vec2 -> Bool
+isOutside : List Hull -> Vec2 -> Bool
 isOutside boundary point = not (isInside boundary point)
 
                            
-isInside : Boundary -> Vec2 -> Bool
+isInside : List Hull -> Vec2 -> Bool
 isInside boundary point =
   let
     isBehind side =
@@ -18,8 +19,34 @@ isInside boundary point =
       |> List.any (List.all isBehind)
 
 
-type alias Boundary =
-  List ( List Side )
+fromSegments : List (Vec2, Vec2) -> Hull
+fromSegments =
+  let
+    toNormal a b =
+      let (x, y) = Vec2.toTuple (Vec2.direction a b)
+      in Vec2.fromTuple (y, -x)
+
+    toSide (a, b) =
+      { keyPoint = a
+      , normal = toNormal a b
+      }
+  in
+    List.map toSide
+
+
+fromVertexes : List Vec2 -> Hull
+fromVertexes vertexes =
+  let
+    segments =
+      (List.drop 1 vertexes) ++ (List.take 1 vertexes)
+        |> List.map2 (,) vertexes
+  in
+    if | List.length vertexes >= 3 -> fromSegments segments
+       | otherwise -> []
+
+               
+type alias Hull =
+  List Side
 
 type alias Side =
   { keyPoint : Vec2, normal : Vec2 }
