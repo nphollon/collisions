@@ -48,6 +48,10 @@ oneSide =
           , test "Point in -Y is outside up-facing side below X-axis"
                    <| assert
                    <| C2D.isOutside [[ floorAt (Vec2.vec2 0 -10) ]] (Vec2.vec2 0 -3)
+
+          , test "On the line counts as being inside"
+                   <| assert
+                   <| C2D.isInside [[ floorAt (Vec2.vec2 0 0) ]] (Vec2.vec2 0 0)
                            
           , test "Point in +Y is inside down-facing side on X-axis"
                    <| assert
