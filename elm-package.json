@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "Collision detection of polygonal & polyhedral shapes",
-    "repository": "https://github.com/nphollon/collision.git",
+    "repository": "https://github.com/nphollon/collisions.git",
     "license": "MIT",
     "source-directories": [
         "src"
