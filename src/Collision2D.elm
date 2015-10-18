@@ -12,7 +12,7 @@ isInside : List Hull -> Vec2 -> Bool
 isInside boundary point =
   let
     isBehind side =
-      Vec2.dot side.normal (Vec2.sub point side.keyPoint) <= 0 
+      Vec2.dot side.normal (Vec2.sub point side.keyPoint) < 1e-6
   in
     boundary
       |> List.filter (not << List.isEmpty)

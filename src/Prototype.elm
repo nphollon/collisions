@@ -77,7 +77,7 @@ drawBounds boundary  =
     drawSide (pointColor, edgeColor) { keyPoint, normal } =
       Collage.group
                [ Collage.circle 3 |> Collage.filled pointColor
-               , ray normal
+               , ray (Vec2.scale 10 normal)
                , edge edgeColor normal
                ]
         |> Collage.move (Vec2.toTuple keyPoint)
@@ -90,7 +90,7 @@ drawBounds boundary  =
 
 ray : Vec2 -> Collage.Form
 ray vec =
-  line Collage.defaultLine (0, 0) (Vec2.toTuple (Vec2.scale 25 vec))
+  line Collage.defaultLine (0, 0) (Vec2.toTuple vec)
 
 
 edge : Color -> Vec2 -> Collage.Form

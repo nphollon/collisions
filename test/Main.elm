@@ -93,6 +93,14 @@ twoSidesOneHull =
             , test "Point is outside hull if inside only one side"
                      <| assert
                      <| C2D.isOutside hull (Vec2.vec2 -2 -1)
+                        
+            , test "Point is inside if on both sides"
+                     <| assert
+                     <| C2D.isInside
+                          [ C2D.fromVertexes
+                                 (List.map Vec2.fromTuple [ (-90, 30), (-60, 50), (-70, 0) ])
+                          ]
+                          (Vec2.vec2 -90 30)
             ]
 
 
