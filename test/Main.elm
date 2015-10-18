@@ -1,7 +1,7 @@
 module Main where
 
 import ElmTest.Test as Test exposing (Test, test, suite)
-import ElmTest.Assertion exposing (assert, assertEqual)
+import ElmTest.Assertion exposing (Assertion, assert, assertEqual)
 import ElmTest.Runner.Element as GraphicsRunner
 import ElmTest.Runner.Console as ConsoleRunner
 import IO.Runner
@@ -148,13 +148,21 @@ fromSegments =
       , (Vec2.vec2 0 1, Vec2.vec2 1 1)
       ]
 
+    nullSegments =
+      [ (Vec2.vec2 3 1, Vec2.vec2 3 1)
+      ]
+
     expectedHull =
       [ { keyPoint = Vec2.vec2 0 0, normal = Vec2.vec2 -1 0 }
       , { keyPoint = Vec2.vec2 0 1, normal = Vec2.vec2 0 1 }
       ]
   in
-    test "Making a hull from a list of line segments"
-           <| assertEqual (C2D.fromSegments segments) expectedHull
+    suite "Making a hull from a list of line segments"
+            [ test "First point is key point, normal directed anti-clockwise"
+                     <| compare2dHulls expectedHull (C2D.fromSegments segments)
+            , test "Line segment length 0 does not return a side"
+                     <| compare2dHulls [] (C2D.fromSegments nullSegments)
+            ]
 
 
 fromVertexes : Test
@@ -176,13 +184,26 @@ fromVertexes =
       , { keyPoint = Vec2.vec2 4 3, normal = Vec2.vec2 1 0 }
       , { keyPoint = Vec2.vec2 4 0, normal = Vec2.vec2 0 -1 }
       ]
+
+    doubleVertexes =
+      [ Vec2.vec2 4 3
+      , Vec2.vec2 4 5
+      , Vec2.vec2 4 3
+      ]
+
+    doubleSides =
+      [ { keyPoint = Vec2.vec2 4 3, normal = Vec2.vec2 -1 0 }
+      , { keyPoint = Vec2.vec2 4 5, normal = Vec2.vec2 1 0 }
+      ]
   in
     suite "Making a hull from a list of points"
             [ test "Two or fewer points returns an empty hull"
-                     <| assertEqual (C2D.fromVertexes shortList) []
+                     <| compare2dHulls [] (C2D.fromVertexes shortList)
 
             , test "Three or more points returns sides connecting all in series"
-                     <| assertEqual (C2D.fromVertexes triangleVertexes) triangleSides
+                     <| compare2dHulls triangleSides (C2D.fromVertexes triangleVertexes)
+            , test "Line segment length 0 does not return a side"
+                     <| compare2dHulls doubleSides (C2D.fromVertexes doubleVertexes)
             ]
 
 
@@ -205,8 +226,18 @@ fromTriangles =
       ]
   in
     test "Making a 3D hull from a list of triangles"
-           <| assertEqual (C3D.fromTriangles triangles) expectedHull
-    
+           <| compare3dHulls expectedHull (C3D.fromTriangles triangles)
+
+
+compare2dHulls : C2D.Hull -> C2D.Hull -> Assertion
+compare2dHulls expected actual =
+  assertEqual (C2D.toPrintable expected) (C2D.toPrintable actual)
+
+
+compare3dHulls : C3D.Hull -> C3D.Hull -> Assertion
+compare3dHulls expected actual =
+  assertEqual (C3D.toPrintable expected) (C3D.toPrintable actual)
+
             
 floorAt : Vec2 -> C2D.Side
 floorAt p =

@@ -1,4 +1,4 @@
-module Collision3D (fromTriangles,
+module Collision3D (fromTriangles, toPrintable,
                     Hull, Face) where
 
 import Math.Vector3 as Vec3 exposing (Vec3)

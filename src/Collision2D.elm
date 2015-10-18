@@ -1,4 +1,4 @@
-module Collision2D (isOutside, isInside, fromSegments, fromVertexes,
+module Collision2D (isOutside, isInside, fromSegments, fromVertexes, toPrintable,
                     Hull, Side) where
 
 import Math.Vector2 as Vec2 exposing (Vec2)
@@ -20,7 +20,7 @@ isInside boundary point =
 
 
 fromSegments : List (Vec2, Vec2) -> Hull
-fromSegments =
+fromSegments segments =
   let
     toNormal a b =
       let (x, y) = Vec2.toTuple (Vec2.direction a b)
@@ -30,8 +30,12 @@ fromSegments =
       { keyPoint = a
       , normal = toNormal a b
       }
+
+    isDefined vec =
+      not (isNaN (Vec2.getX vec) || isNaN (Vec2.getY vec))
   in
-    List.map toSide
+    List.map toSide segments
+      |> List.filter (.normal >> isDefined)
 
 
 fromVertexes : List Vec2 -> Hull
