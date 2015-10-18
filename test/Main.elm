@@ -7,8 +7,11 @@ import ElmTest.Runner.Console as ConsoleRunner
 import IO.Runner
 
 import Math.Vector2 as Vec2 exposing (Vec2)
+import Math.Vector3 as Vec3 exposing (Vec3)
 
 import Collision2D as C2D
+import Collision3D as C3D
+
 
 allTests : Test
 allTests =
@@ -19,9 +22,10 @@ allTests =
                     , twoSidesOneHull
                     , twoSidesTwoHulls
                     ]
-          , suite "2D hull construction"
+          , suite "Hull construction"
                     [ fromSegments
                     , fromVertexes
+                    , fromTriangles
                     ]
           ]
 
@@ -180,6 +184,28 @@ fromVertexes =
             , test "Three or more points returns sides connecting all in series"
                      <| assertEqual (C2D.fromVertexes triangleVertexes) triangleSides
             ]
+
+
+fromTriangles : Test
+fromTriangles =
+  let
+    precision =
+      1E-6
+        
+    triangles =
+      [ (Vec3.vec3 0 0 0, Vec3.vec3 2 0 0, Vec3.vec3 0 1 0)
+      , (Vec3.vec3 1 1 1, Vec3.vec3 1 2 1, Vec3.vec3 1 1 2)
+      , (Vec3.vec3 -1 -2 -3, Vec3.vec3 -1 -2 -4, Vec3.vec3 0 -2 -3)
+      ]
+
+    expectedHull =
+      [ { keyPoint = Vec3.vec3 0 0 0, normal = Vec3.vec3 0 0 1 }
+      , { keyPoint = Vec3.vec3 1 1 1, normal = Vec3.vec3 1 0 0 }
+      , { keyPoint = Vec3.vec3 -1 -2 -3, normal = Vec3.vec3 0 -1 0 }
+      ]
+  in
+    test "Making a 3D hull from a list of triangles"
+           <| assertEqual (C3D.fromTriangles triangles) expectedHull
     
             
 floorAt : Vec2 -> C2D.Side

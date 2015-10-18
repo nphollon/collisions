@@ -1,5 +1,5 @@
 module Collision2D (isOutside, isInside, fromSegments, fromVertexes,
-                             Hull, Side) where
+                    Hull, Side) where
 
 import Math.Vector2 as Vec2 exposing (Vec2)
 
@@ -44,9 +44,19 @@ fromVertexes vertexes =
     if | List.length vertexes >= 3 -> fromSegments segments
        | otherwise -> []
 
-               
+
+toPrintable : Hull -> List { keyPoint : (Float, Float), normal : (Float, Float) }
+toPrintable =
+  List.map (\face ->
+              { keyPoint = Vec2.toTuple face.keyPoint
+              , normal = Vec2.toTuple face.normal
+              }
+           )
+
+  
 type alias Hull =
   List Side
 
 type alias Side =
-  { keyPoint : Vec2, normal : Vec2 }
+  { keyPoint : Vec2
+  , normal : Vec2 }
