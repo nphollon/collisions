@@ -7,9 +7,9 @@ import ElmTest.Runner.Console as ConsoleRunner
 import IO.Runner
 
 import Math.Vector2 as Vec2 exposing (Vec2)
-import Math.Vector3 as Vec3 exposing (Vec3)
-
 import Collision2D as C2D
+
+import Math.Vector3 as Vec3 exposing (Vec3)
 import Collision3D as C3D
 
 
@@ -27,8 +27,18 @@ allTests =
                     , fromVertexes
                     , fromTriangles
                     ]
+          , suite "3D collision"
+                    [ noFaces
+                    , oneFace
+                    , twoFacesOneHull
+                    , twoFacesTwoHulls
+                    ]
           ]
 
+
+{-
+Two Dimensions
+-}
 
 noSides : Test
 noSides =
@@ -160,6 +170,7 @@ fromSegments =
     suite "Making a hull from a list of line segments"
             [ test "First point is key point, normal directed anti-clockwise"
                      <| compare2dHulls expectedHull (C2D.fromSegments segments)
+                        
             , test "Line segment length 0 does not return a side"
                      <| compare2dHulls [] (C2D.fromSegments nullSegments)
             ]
@@ -202,31 +213,10 @@ fromVertexes =
 
             , test "Three or more points returns sides connecting all in series"
                      <| compare2dHulls triangleSides (C2D.fromVertexes triangleVertexes)
+                        
             , test "Line segment length 0 does not return a side"
                      <| compare2dHulls doubleSides (C2D.fromVertexes doubleVertexes)
             ]
-
-
-fromTriangles : Test
-fromTriangles =
-  let
-    precision =
-      1E-6
-        
-    triangles =
-      [ (Vec3.vec3 0 0 0, Vec3.vec3 2 0 0, Vec3.vec3 0 1 0)
-      , (Vec3.vec3 1 1 1, Vec3.vec3 1 2 1, Vec3.vec3 1 1 2)
-      , (Vec3.vec3 -1 -2 -3, Vec3.vec3 -1 -2 -4, Vec3.vec3 0 -2 -3)
-      ]
-
-    expectedHull =
-      [ { keyPoint = Vec3.vec3 0 0 0, normal = Vec3.vec3 0 0 1 }
-      , { keyPoint = Vec3.vec3 1 1 1, normal = Vec3.vec3 1 0 0 }
-      , { keyPoint = Vec3.vec3 -1 -2 -3, normal = Vec3.vec3 0 -1 0 }
-      ]
-  in
-    test "Making a 3D hull from a list of triangles"
-           <| compare3dHulls expectedHull (C3D.fromTriangles triangles)
 
 
 compare2dHulls : C2D.Hull -> C2D.Hull -> Assertion
@@ -234,11 +224,6 @@ compare2dHulls expected actual =
   assertEqual (C2D.toPrintable expected) (C2D.toPrintable actual)
 
 
-compare3dHulls : C3D.Hull -> C3D.Hull -> Assertion
-compare3dHulls expected actual =
-  assertEqual (C3D.toPrintable expected) (C3D.toPrintable actual)
-
-            
 floorAt : Vec2 -> C2D.Side
 floorAt p =
   { keyPoint = p, normal = Vec2.vec2 0 1 }
@@ -253,7 +238,135 @@ slopeAt : Vec2 -> C2D.Side
 slopeAt p =
   { keyPoint = p, normal = Vec2.vec2 -1 1 }
 
+
+{-
+Three Dimensions
+-}
+
+fromTriangles : Test
+fromTriangles =
+  let
+    precision =
+      1E-6
         
+    triangles =
+      [ (Vec3.vec3 0 0 0, Vec3.vec3 2 0 0, Vec3.vec3 0 1 0)
+      , (Vec3.vec3 1 1 1, Vec3.vec3 1 2 1, Vec3.vec3 1 1 2)
+      , (Vec3.vec3 -1 -2 -3, Vec3.vec3 -1 -2 -4, Vec3.vec3 0 -2 -3)
+      ]
+
+    linesAndTriangles =
+      [ (Vec3.vec3 2 2 2, Vec3.vec3 2 2 2, Vec3.vec3 3 0 0)
+      , (Vec3.vec3 0 0 0, Vec3.vec3 0 0 5, Vec3.vec3 0 0 9)
+      ] ++ triangles
+
+    expectedHull =
+      [ { keyPoint = Vec3.vec3 0 0 0, normal = Vec3.vec3 0 0 1 }
+      , { keyPoint = Vec3.vec3 1 1 1, normal = Vec3.vec3 1 0 0 }
+      , { keyPoint = Vec3.vec3 -1 -2 -3, normal = Vec3.vec3 0 -1 0 }
+      ]
+  in
+    suite "Making a 3D hull from a list of triangles"
+            [ test "key point is first point, normal is cross product of face vectors"
+                     <| compare3dHulls expectedHull (C3D.fromTriangles triangles)
+                        
+            , test "degenerate triangles do not get turned into faces"
+                     <| compare3dHulls expectedHull (C3D.fromTriangles linesAndTriangles)
+            ]
+
+
+noFaces : Test
+noFaces =
+  suite "Empty surface"
+          [ test "Point is not inside a hull with no faces"
+                   <| assert
+                   <| C3D.isOutside [[]] (Vec3.vec3 0 0 0)
+                      
+          , test "Point is not inside a boundary with no hulls"
+                   <| assert
+                   <| C3D.isOutside [] (Vec3.vec3 0 0 0)
+          ]
+
+
+oneFace : Test
+oneFace =
+  suite "One-faced hull"
+          [ test "Point in -Z is inside out-facing surface on Z=0"
+                   <| assert
+                   <| C3D.isInside [[ face (0,0,0) (0,0,1) ]] (Vec3.vec3 0 0 -5)
+
+          , test "Point in +Z is inside in-facing surface on Z=0"
+                   <| assert
+                   <| C3D.isInside [[ face (0,0,0) (0,0,-1) ]] (Vec3.vec3 0 0 5)
+          , test "Point in -Y is inside up-facing surface on Y=0"
+                   <| assert
+                   <| C3D.isInside [[ face (0,0,0) (0,1,0) ]] (Vec3.vec3 0 -5 5)
+          , test "Point at X = 5 is outside left-facing surface on X = 10"
+                   <| assert
+                   <| C3D.isOutside [[ face (10,0,0) (-1,0,0) ]] (Vec3.vec3 5 0 0)
+          , test "On the face counts as being inside"
+                   <| assert
+                   <| C3D.isInside [[ face (1, 1, 1) (0.6, -0.8, 0) ]] (Vec3.vec3 1.003 1.004 1)
+          ]
+
+
+twoFacesOneHull : Test
+twoFacesOneHull =
+  let
+    hull =
+      [ [ face (0, 0, 0) (0, 1, 0) 
+        , face (0, 0, 0) (1, 0, 0)
+        ]
+      ]
+  in
+    suite "Two-faced hull"
+            [ test "point is inside if inside both faces"
+                     <| assert
+                     <| C3D.isInside hull (Vec3.vec3 -10 -10 -10)
+            , test "point is outside if outside both faces"
+                     <| assert
+                     <| C3D.isOutside hull (Vec3.vec3 10 10 -10)
+            , test "point is outside if inside only one face"
+                     <| assert
+                     <| C3D.isOutside hull (Vec3.vec3 10 -10 -10)
+            ]
+
+
+twoFacesTwoHulls : Test
+twoFacesTwoHulls =
+  let
+    hull =
+      [ [ face (0, 0, 0) (0, 1, 0) ]
+      , [ face (0, 0, 0) (1, 0, 0) ]
+      ]
+  in
+    suite "Two one-faced hulls"
+            [ test "point is inside if inside both faces"
+                     <| assert
+                     <| C3D.isInside hull (Vec3.vec3 -10 -10 -10)
+            , test "point is outside if outside both faces"
+                     <| assert
+                     <| C3D.isOutside hull (Vec3.vec3 10 10 -10)
+            , test "point is inside if inside only one face"
+                     <| assert
+                     <| C3D.isInside hull (Vec3.vec3 10 -10 -10)
+            ]
+
+compare3dHulls : C3D.Hull -> C3D.Hull -> Assertion
+compare3dHulls expected actual =
+  assertEqual (C3D.toPrintable expected) (C3D.toPrintable actual)
+
+
+face : (Float, Float, Float) -> (Float, Float, Float)  -> C3D.Face
+face keyPoint normal =
+  { keyPoint = Vec3.fromTuple keyPoint
+  , normal = Vec3.fromTuple normal
+  }
+
+{-
+Command line test harness
+-}
+
 port requests : Signal IO.Runner.Request
 port requests =
   IO.Runner.run responses (ConsoleRunner.runDisplay allTests)
