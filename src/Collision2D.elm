@@ -1,7 +1,8 @@
 module Collision2D (isOutside, isInside, fromSegments, fromVertexes, toPrintable,
-                    Hull, Side) where
+                    Hull, Side, Vec2) where
 
-{-|
+{-| Collision detection in two dimensions
+
 # Types
 @docs Hull, Side, Vec2
 
@@ -19,19 +20,22 @@ module Collision2D (isOutside, isInside, fromSegments, fromVertexes, toPrintable
 import Math.Vector2 as Vec2
 
 
-{-| A side is a straight-line boundary with an inside and an outside. The key point is a location on the boundary. The [normal](https://en.wikipedia.org/wiki/Normal_%28geometry%29)
-is a unit vector perpendicular to the boundary.
+{-| A side is a straight-line boundary with an inside and an outside. The key
+point isva location on the boundary. The
+[normal](https://en.wikipedia.org/wiki/Normal_%28geometry%29) is a unit vector
+perpendicular to the boundary.
 
-Any point on the side can be a key point, so sides with different key points can be equivalent sometimes.
+Any point on the side can be a key point, so sides with different key points can
+be equivalent sometimes.
 
     -- These sides are equivalent because their key points are on the same line
     { keyPoint = Vec2.vec2 1 0, normal = Vec2.vec2 0 1 } ==
       { keyPoint = Vec2.vec2 -1 0, normal = Vec2.vec2 0 1 }
 
-    -- These sides are parallel because their normals are equal but their key points are on different lines
+    -- These sides are parallel because their normals are equal
+    -- and their key points are on different lines
     { keyPoint = Vec2.vec2 2 1, normal = Vec2.vec2 0.6 0.8 } ==
       { keyPoint = Vec2.vec2 -3 -3, normal = Vec2.vec2 0.6 0.8 }
-
 -}
 
 type alias Side =
@@ -39,10 +43,11 @@ type alias Side =
   , normal : Vec2 }
 
 
-{-| A collection of sides that together represent a shape. This library interprets the sides as forming the smallest possible convex polygon.
+{-| A collection of sides that together represent a shape. This library
+interprets the sides as forming the smallest possible convex polygon.
 
-Since the sides have no endpoints, infinite-area hulls are possible (e.g. if there are less than three sides).
-
+Since the sides have no endpoints, infinite-area hulls are possible (e.g. if
+there are less than three sides).
 -}
 type alias Hull =
   List Side

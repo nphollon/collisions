@@ -1,7 +1,8 @@
 module Collision3D (isOutside, isInside, fromTriangles, toPrintable,
-                    Hull, Face) where
+                    Hull, Face, Vec3) where
 
-{-|
+{-| Collision detection in three dimensions
+
 # Types
 @docs Hull, Side, Vec3
 
@@ -16,22 +17,24 @@ module Collision3D (isOutside, isInside, fromTriangles, toPrintable,
 -}
 
 
-import Math.Vector3 as Vec3 exposing
+import Math.Vector3 as Vec3
 
 
-{-| A face is a plane boundary with an inside and an outside. The key point is a location on the boundary. The [normal](https://en.wikipedia.org/wiki/Normal_%28geometry%29)
+{-| A face is a plane boundary with an inside and an outside. The key point is a
+location on the boundary. The [normal](https://en.wikipedia.org/wiki/Normal_%28geometry%29)
 is a unit vector perpendicular to the boundary.
 
-Any point on the face can be a key point, so faces with different key points can be equivalent sometimes.
+Any point on the face can be a key point, so faces with different key points can 
+be equivalent sometimes.
 
     -- These faces are equivalent because their key points are on the same plane
     { keyPoint = Vec3.vec3 1 0 -1, normal = Vec3.vec3 0 1 0 } ==
       { keyPoint = Vec3.vec2 -1 0 3, normal = Vec3.vec3 0 1 0 }
 
-    -- These faces are parallel because their normals are equal but their key points are on different lines
+    -- These faces are parallel because their normals are equal
+    -- and their key points are on different lines
     { keyPoint = Vec3.vec3 2 1 0, normal = Vec3.vec3 0 0.6 0.8 } ==
       { keyPoint = Vec2.vec2 -3 -3 -3, normal = Vec3.vec3 0 0.6 0.8 }
-
 -}
 type alias Face =
   { keyPoint : Vec3
@@ -39,10 +42,11 @@ type alias Face =
   }
 
 
-{-| A collection of faces that together represent a shape. This library interprets the sides as forming the smallest possible convex polyhedron.
+{-| A collection of faces that together represent a shape. This library interprets
+the sides as forming the smallest possible convex polyhedron.
 
-Since the faces have no edges, infinite-volume hulls are possible (e.g. if there are less than four faces).
-
+Since the faces have no edges, infinite-volume hulls are possible (e.g. if there are
+less than four faces).
 -}
 type alias Hull =
   List Face
@@ -50,7 +54,7 @@ type alias Hull =
 
 {-| Alias for Vec3 in [johnpmayer/elm-linear-algebra](http://package.elm-lang.org/packages/johnpmayer/elm-linear-algebra/2.0.2)
 -}
-type alias Vec3 s= Vec3.Vec3
+type alias Vec3 = Vec3.Vec3
 
 
 {-| Returns `True` if the given position is on or in the given hull.
