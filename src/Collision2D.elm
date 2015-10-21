@@ -1,15 +1,7 @@
 module Collision2D (isOutside, isInside, fromSegments, fromVertexes, toPrintable,
                     Hull, Side) where
 
-{-| The examples in this module use the following triangular hull:
-
-    hull =
-      [ { keyPoint = Vec2.vec2 0 1, normal = Vec2.vec2 -1 0 }
-      , { keyPoint = Vec2.vec2 3 4, normal = Vec2.vec2 0.8 0.6 }
-      , { keyPoint = Vec2.vec2 1 0, normal = Vec2.vec2 0 -1 }
-      ]
-
-
+{-|
 # Types
 @docs Hull, Side, Vec2
 
@@ -64,6 +56,12 @@ type alias Vec2 = Vec2.Vec2
 {-| Returns `True` if the given position is on or in the given hull.
 Defaults to `False` if the hull has no sides.
     
+    hull =
+      [ { keyPoint = Vec2.vec2 0 1, normal = Vec2.vec2 -1 0 }
+      , { keyPoint = Vec2.vec2 3 4, normal = Vec2.vec2 0.8 0.6 }
+      , { keyPoint = Vec2.vec2 1 0, normal = Vec2.vec2 0 -1 }
+      ]
+
     isInside hull (Vec2.vec2 1 1) == True
 
     isInside hull (Vec2.vec2 -1 2) == False
@@ -89,6 +87,8 @@ isOutside boundary point = not (isInside boundary point)
 
 {-| Given the vertexes of a polygon, compute a hull. Vertexes must be ordered
 counter-clockwise around the center of the shape. Only works for convex polygons.
+
+Returns an empty hull if given less than three vertexes.
 -}
 fromVertexes : List Vec2 -> Hull
 fromVertexes vertexes =
@@ -105,7 +105,7 @@ fromVertexes vertexes =
 the normal will point counter-clockwise.
 
     fromSegments [(Vec2.vec2 1 1, Vec2.vec2 2 2)] ==
-      { keyPoint = Vec2.vec2 1 1, normal = Vec2.vec2 -(sqrt 2) -(sqrt 2) }
+      { keyPoint = Vec2.vec2 1 1, normal = Vec2.vec2 -0.7071 -0.7071 }
 -}
 fromSegments : List (Vec2, Vec2) -> Hull
 fromSegments segments =
