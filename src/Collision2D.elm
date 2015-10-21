@@ -4,19 +4,26 @@ module Collision2D (isOutside, isInside, fromSegments, fromVertexes, toPrintable
 import Math.Vector2 as Vec2 exposing (Vec2)
 
 
-isOutside : List Hull -> Vec2 -> Bool
+type alias Hull =
+  List Side
+
+       
+type alias Side =
+  { keyPoint : Vec2
+  , normal : Vec2 }
+
+
+isOutside : Hull -> Vec2 -> Bool
 isOutside boundary point = not (isInside boundary point)
 
                            
-isInside : List Hull -> Vec2 -> Bool
+isInside : Hull -> Vec2 -> Bool
 isInside boundary point =
   let
     isBehind side =
       Vec2.dot side.normal (Vec2.sub point side.keyPoint) < 1e-6
   in
-    boundary
-      |> List.filter (not << List.isEmpty)
-      |> List.any (List.all isBehind)
+    not (List.isEmpty boundary) && List.all isBehind boundary
 
 
 fromSegments : List (Vec2, Vec2) -> Hull
@@ -57,10 +64,3 @@ toPrintable =
               }
            )
 
-  
-type alias Hull =
-  List Side
-
-type alias Side =
-  { keyPoint : Vec2
-  , normal : Vec2 }

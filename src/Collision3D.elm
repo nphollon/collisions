@@ -4,19 +4,27 @@ module Collision3D (isOutside, isInside, fromTriangles, toPrintable,
 import Math.Vector3 as Vec3 exposing (Vec3)
 
 
-isOutside : List Hull -> Vec3 -> Bool
+type alias Hull =
+  List Face
+
+       
+type alias Face =
+  { keyPoint : Vec3
+  , normal : Vec3
+  }
+
+
+isOutside : Hull -> Vec3 -> Bool
 isOutside boundary point = not (isInside boundary point)
 
 
-isInside : List Hull -> Vec3 -> Bool
+isInside : Hull -> Vec3 -> Bool
 isInside boundary point =
   let
     isBehind face =
       Vec3.dot face.normal (Vec3.sub point face.keyPoint) < 1e-6
   in
-    boundary
-      |> List.filter (not << List.isEmpty)
-      |> List.any (List.all isBehind) 
+    not (List.isEmpty boundary) && List.all isBehind boundary
 
 
 fromTriangles : List (Vec3, Vec3, Vec3) -> Hull
@@ -37,22 +45,10 @@ fromTriangles triangles =
       |> List.filter (.normal >> isDefined)
 
 
-toPrintable : Hull -> List { keyPoint : Triple Float, normal : Triple Float }
+toPrintable : Hull -> List { keyPoint : (Float, Float, Float), normal : (Float, Float, Float) }
 toPrintable =
   List.map (\face ->
               { keyPoint = Vec3.toTuple face.keyPoint
               , normal = Vec3.toTuple face.normal
               }
            )
-
-
-type alias Hull =
-  List Face
-
-       
-type alias Face =
-  { keyPoint : Vec3, normal : Vec3 }
-
-  
-type alias Triple a =
-  (a, a, a)

@@ -19,8 +19,7 @@ allTests =
           [ suite "2D collision"
                     [ noSides
                     , oneSide
-                    , twoSidesOneHull
-                    , twoSidesTwoHulls
+                    , twoSides
                     ]
           , suite "Hull construction"
                     [ fromSegments
@@ -30,8 +29,7 @@ allTests =
           , suite "3D collision"
                     [ noFaces
                     , oneFace
-                    , twoFacesOneHull
-                    , twoFacesTwoHulls
+                    , twoFaces
                     ]
           ]
 
@@ -42,43 +40,38 @@ Two Dimensions
 
 noSides : Test
 noSides =
-  suite "Empty boundary"
-          [ test "Point is not inside a hull with no sides"
-                   <| assert
-                   <| C2D.isOutside [[]] (Vec2.vec2 0 0)
-                      
-          , test "Point is not inside a boundary with no hulls"
-                   <| assert
-                   <| C2D.isOutside [] (Vec2.vec2 0 0)                  
-          ]
-  
+  test "Point is not inside a hull with no sides"
+         <| assert
+         <| C2D.isOutside [] (Vec2.vec2 0 0)
+
+            
 oneSide : Test
 oneSide =
   suite "One-sided hull"
           [ test "Point in -Y is inside up-facing side on X-axis"
                    <| assert
-                   <| C2D.isInside [[ floorAt (Vec2.vec2 0 0) ]] (Vec2.vec2 0 -3)
+                   <| C2D.isInside [ floorAt (Vec2.vec2 0 0) ] (Vec2.vec2 0 -3)
                            
           , test "Point in -Y is outside up-facing side below X-axis"
                    <| assert
-                   <| C2D.isOutside [[ floorAt (Vec2.vec2 0 -10) ]] (Vec2.vec2 0 -3)
+                   <| C2D.isOutside [ floorAt (Vec2.vec2 0 -10) ] (Vec2.vec2 0 -3)
 
           , test "On the line counts as being inside"
                    <| assert
-                   <| C2D.isInside [[ floorAt (Vec2.vec2 0 0) ]] (Vec2.vec2 0 0)
+                   <| C2D.isInside [ floorAt (Vec2.vec2 0 0) ] (Vec2.vec2 0 0)
                            
           , test "Point in +Y is inside down-facing side on X-axis"
                    <| assert
-                   <| C2D.isInside [[ ceilingAt (Vec2.vec2 0 0) ]] (Vec2.vec2 0 3)
+                   <| C2D.isInside [ ceilingAt (Vec2.vec2 0 0) ] (Vec2.vec2 0 3)
                            
           , test "Point in quadrant II is outside up-facing side on X=Y"
                    <| assert
-                   <| C2D.isOutside [[ slopeAt (Vec2.vec2 10 10) ]] (Vec2.vec2 -1 2)
+                   <| C2D.isOutside [ slopeAt (Vec2.vec2 10 10) ] (Vec2.vec2 -1 2)
           ]
   
 
-twoSidesOneHull : Test
-twoSidesOneHull =
+twoSides : Test
+twoSides =
   let
     {-
          /
@@ -90,9 +83,8 @@ twoSidesOneHull =
      -}
     
     hull =
-      [ [ floorAt (Vec2.vec2 0 0)
-        , slopeAt (Vec2.vec2 0 0)
-        ]
+      [ floorAt (Vec2.vec2 0 0)
+      , slopeAt (Vec2.vec2 0 0)
       ]
   in
     suite "Two-sided hull"
@@ -111,42 +103,9 @@ twoSidesOneHull =
             , test "Point is inside if on both sides"
                      <| assert
                      <| C2D.isInside
-                          [ C2D.fromVertexes
-                                 (List.map Vec2.fromTuple [ (-90, 30), (-60, 50), (-70, 0) ])
-                          ]
+                          (C2D.fromVertexes
+                                (List.map Vec2.fromTuple [ (-90, 30), (-60, 50), (-70, 0) ]))
                           (Vec2.vec2 -90 30)
-            ]
-
-
-twoSidesTwoHulls : Test
-twoSidesTwoHulls =
-  let
-    {-
-         /.
-        /..    
-    ---+---
-    ../....
-    ./.....
-
-     -}
-    
-    hulls =
-      [ [ floorAt (Vec2.vec2 0 0) ]
-      , [ slopeAt (Vec2.vec2 0 0) ]
-      ]
-  in
-    suite "Two one-sided hulls"
-            [ test "Point is inside boundary if inside both hulls"
-                     <| assert
-                     <| C2D.isInside hulls (Vec2.vec2 2 -1)
-
-            , test "Point is outside boundary if outside both hulls"
-                     <| assert
-                     <| C2D.isOutside hulls (Vec2.vec2 -2 1)
-
-            , test "Point is inside boundary if inside only one hull"
-                     <| assert
-                     <| C2D.isInside hulls (Vec2.vec2 -2 -1)
             ]
 
 
@@ -277,15 +236,9 @@ fromTriangles =
 
 noFaces : Test
 noFaces =
-  suite "Empty surface"
-          [ test "Point is not inside a hull with no faces"
-                   <| assert
-                   <| C3D.isOutside [[]] (Vec3.vec3 0 0 0)
-                      
-          , test "Point is not inside a boundary with no hulls"
-                   <| assert
-                   <| C3D.isOutside [] (Vec3.vec3 0 0 0)
-          ]
+  test "Point is not inside a hull with no faces"
+         <| assert
+         <| C3D.isOutside [] (Vec3.vec3 0 0 0)
 
 
 oneFace : Test
@@ -293,30 +246,29 @@ oneFace =
   suite "One-faced hull"
           [ test "Point in -Z is inside out-facing surface on Z=0"
                    <| assert
-                   <| C3D.isInside [[ face (0,0,0) (0,0,1) ]] (Vec3.vec3 0 0 -5)
+                   <| C3D.isInside [ face (0,0,0) (0,0,1) ] (Vec3.vec3 0 0 -5)
 
           , test "Point in +Z is inside in-facing surface on Z=0"
                    <| assert
-                   <| C3D.isInside [[ face (0,0,0) (0,0,-1) ]] (Vec3.vec3 0 0 5)
+                   <| C3D.isInside [ face (0,0,0) (0,0,-1) ] (Vec3.vec3 0 0 5)
           , test "Point in -Y is inside up-facing surface on Y=0"
                    <| assert
-                   <| C3D.isInside [[ face (0,0,0) (0,1,0) ]] (Vec3.vec3 0 -5 5)
+                   <| C3D.isInside [ face (0,0,0) (0,1,0) ] (Vec3.vec3 0 -5 5)
           , test "Point at X = 5 is outside left-facing surface on X = 10"
                    <| assert
-                   <| C3D.isOutside [[ face (10,0,0) (-1,0,0) ]] (Vec3.vec3 5 0 0)
+                   <| C3D.isOutside [ face (10,0,0) (-1,0,0) ] (Vec3.vec3 5 0 0)
           , test "On the face counts as being inside"
                    <| assert
-                   <| C3D.isInside [[ face (1, 1, 1) (0.6, -0.8, 0) ]] (Vec3.vec3 1.003 1.004 1)
+                   <| C3D.isInside [ face (1, 1, 1) (0.6, -0.8, 0) ] (Vec3.vec3 1.003 1.004 1)
           ]
 
 
-twoFacesOneHull : Test
-twoFacesOneHull =
+twoFaces : Test
+twoFaces =
   let
     hull =
-      [ [ face (0, 0, 0) (0, 1, 0) 
-        , face (0, 0, 0) (1, 0, 0)
-        ]
+      [ face (0, 0, 0) (0, 1, 0) 
+      , face (0, 0, 0) (1, 0, 0)
       ]
   in
     suite "Two-faced hull"
@@ -331,26 +283,6 @@ twoFacesOneHull =
                      <| C3D.isOutside hull (Vec3.vec3 10 -10 -10)
             ]
 
-
-twoFacesTwoHulls : Test
-twoFacesTwoHulls =
-  let
-    hull =
-      [ [ face (0, 0, 0) (0, 1, 0) ]
-      , [ face (0, 0, 0) (1, 0, 0) ]
-      ]
-  in
-    suite "Two one-faced hulls"
-            [ test "point is inside if inside both faces"
-                     <| assert
-                     <| C3D.isInside hull (Vec3.vec3 -10 -10 -10)
-            , test "point is outside if outside both faces"
-                     <| assert
-                     <| C3D.isOutside hull (Vec3.vec3 10 10 -10)
-            , test "point is inside if inside only one face"
-                     <| assert
-                     <| C3D.isInside hull (Vec3.vec3 10 -10 -10)
-            ]
 
 compare3dHulls : C3D.Hull -> C3D.Hull -> Assertion
 compare3dHulls expected actual =
