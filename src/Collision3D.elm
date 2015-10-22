@@ -7,6 +7,9 @@ module Collision3D (isOutside, isInside, fromTriangles, Hull) where
 
 # Collision Detection
 @docs isInside, isOutside
+
+# Type
+@docs Hull
 -}
 
 
@@ -78,8 +81,12 @@ isOutside point boundary = not (isInside point boundary)
 
 {-| A collection of faces that together represent a shape. This library interprets
 the sides as forming the smallest possible convex polyhedron.
+-}
+type Hull =
+  Bounded (List Face)
 
-A face is a plane boundary with an inside and an outside. The key point is a
+
+{- A face is a plane boundary with an inside and an outside. The key point is a
 location on the boundary. The [normal](https://en.wikipedia.org/wiki/Normal_%28geometry%29)
 is a unit vector perpendicular to the boundary.
 
@@ -89,10 +96,6 @@ be equivalent sometimes.
 Since the faces have no edges, infinite-volume hulls are possible (e.g. if there are
 less than four faces).
 -}
-type Hull =
-  Bounded (List Face)
-
-
 type alias Face =
   { keyPoint : Vec3
   , normal : Vec3

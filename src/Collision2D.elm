@@ -6,7 +6,10 @@ module Collision2D (isOutside, isInside, fromVectors, Hull) where
 @docs isInside, isOutside
 
 # Building a hull
-@docs fromVertexes
+@docs fromVectors
+
+# Type
+@docs Hull
 -}
 
 
@@ -86,8 +89,12 @@ isOutside point boundary = not (isInside point boundary)
 
 {-| A collection of sides that together represent a hull. This library
 interprets the sides as forming the smallest possible convex polygon.
+-}
+type Hull =
+  Bounded (List Side)
 
-A side is a straight-line boundary with an inside and an outside. The key
+
+{- A side is a straight-line boundary with an inside and an outside. The key
 point is a location on the boundary. The
 [normal](https://en.wikipedia.org/wiki/Normal_%28geometry%29) is a unit vector
 perpendicular to the boundary.
@@ -98,10 +105,6 @@ be equivalent sometimes.
 Since the sides have no endpoints, infinite-area hulls are possible (e.g. if
 there are less than three sides).
 -}
-type Hull =
-  Bounded (List Side)
-
-          
 type alias Side =
   { keyPoint : Vec2
   , normal : Vec2 }
