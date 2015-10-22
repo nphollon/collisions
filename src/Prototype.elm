@@ -10,28 +10,43 @@ import String
 
 import Collision2D
 
+
 main : Signal Element.Element
 main = 
   Signal.foldp update init input |> Signal.map view
 
 
-view : Model -> Element.Element
-view model = 
-  Element.flow Element.down
-           [ picture model
-           , text model
-           ]
+{- DATA -}
+
+type alias Model =
+  { position : Vec2
+  , hit : Bool
+  }
+
+                 
+init : Model
+init =
+  { position = Vec2.vec2 0 0
+  , hit = False
+  }
 
 
-update : Update -> Model -> Model
-update up model =
-  case up of
-    CursorAt pos ->
-      { model | position <- pos
-              , hit <- Collision2D.isInside theBoundary pos
-      }
+theShapes : List (List (Float, Float))
+theShapes =
+  [ [ (-90, 30), (-60, 50), (-70, 0) ]
+  , [ (50, -85), (50, -25), (90, -15), (90, -75) ]
+  ]
 
 
+scale = 250
+
+
+{- UPDATE LOGIC -}  
+
+type Update =
+  CursorAt Vec2
+
+           
 input : Signal Update
 input =
   let
@@ -43,11 +58,28 @@ input =
     Signal.map toModelSpace Mouse.position
 
 
-init : Model
-init =
-  { position = Vec2.vec2 0 0
-  , hit = False
-  }
+update : Update -> Model -> Model
+update up model =
+  case up of
+    CursorAt pos ->
+      { model | position <- pos
+              , hit <- List.any (Collision2D.isInside pos) theBoundary
+      }
+
+
+theBoundary : List Collision2D.Hull
+theBoundary =
+  List.map Collision2D.fromTuples theShapes
+
+
+{- VIEW LOGIC -}
+
+view : Model -> Element.Element
+view model = 
+  Element.flow Element.down
+           [ picture model
+           , text model
+           ]
 
 
 picture : Model -> Element.Element
@@ -56,38 +88,20 @@ picture model =
            [ edge Color.lightGrey (Vec2.vec2 1 0)
            , edge Color.lightGrey (Vec2.vec2 0 1)
            , drawShapes theShapes
-           , drawBounds theBoundary
            ]
 
 
-drawShapes : List (List Vec2) -> Collage.Form
+drawShapes : List (List (Float, Float)) -> Collage.Form
 drawShapes shapes =
   let
     drawShape (_, fillColor) vecs =
-      List.map (Vec2.toTuple) vecs
+      vecs
         |> Collage.polygon
         |> Collage.filled fillColor
   in
     Collage.group (List.map2 drawShape palette shapes)
 
   
-drawBounds : List Collision2D.Hull -> Collage.Form
-drawBounds boundary  =
-  let
-    drawSide (pointColor, edgeColor) { keyPoint, normal } =
-      Collage.group
-               [ Collage.circle 3 |> Collage.filled pointColor
-               , ray (Vec2.scale 10 normal)
-               , edge edgeColor normal
-               ]
-        |> Collage.move (Vec2.toTuple keyPoint)
-
-    drawHull colors hull =
-      Collage.group (List.map (drawSide colors) hull)
-  in
-    Collage.group (List.map2 drawHull palette boundary)
-
-
 ray : Vec2 -> Collage.Form
 ray vec =
   line Collage.defaultLine (0, 0) (Vec2.toTuple vec)
@@ -125,19 +139,6 @@ text model =
               ]
   in
     modelText |> Element.leftAligned
-      
-      
-theBoundary : List Collision2D.Hull
-theBoundary =
-  List.map Collision2D.fromVertexes theShapes
-
-
-theShapes : List (List Vec2)
-theShapes =
-  List.map (List.map Vec2.fromTuple)
-        [ [ (-90, 30), (-60, 50), (-70, 0) ]
-        , [ (50, -85), (50, -25), (90, -15), (90, -75) ]
-        ]
 
 
 palette : List (Color, Color)
@@ -152,14 +153,3 @@ palette =
   ]
 
 
-scale = 250
-
-  
-type Update =
-  CursorAt Vec2
-
-
-type alias Model =
-  { position : Vec2
-  , hit : Bool
-  }

@@ -16,18 +16,13 @@ import Collision3D as C3D
 allTests : Test
 allTests =
   suite "All tests"
-          [ suite "2D collision"
-                    [ noSides
-                    , oneSide
-                    , twoSides
+          [ suite "2D"
+                    [ emptyHulls
+                    , triangleHull
                     ]
-          , suite "Hull construction"
-                    [ fromSegments
-                    , fromVertexes
-                    , fromTriangles
-                    ]
-          , suite "3D collision"
-                    [ noFaces
+          , suite "3D"
+                    [ fromTriangles
+                    , noFaces
                     , oneFace
                     , twoFaces
                     ]
@@ -38,165 +33,120 @@ allTests =
 Two Dimensions
 -}
 
-noSides : Test
-noSides =
-  test "Point is not inside a hull with no sides"
-         <| assert
-         <| C2D.isOutside [] (Vec2.vec2 0 0)
-
-            
-oneSide : Test
-oneSide =
-  suite "One-sided hull"
-          [ test "Point in -Y is inside up-facing side on X-axis"
-                   <| assert
-                   <| C2D.isInside [ floorAt (Vec2.vec2 0 0) ] (Vec2.vec2 0 -3)
-                           
-          , test "Point in -Y is outside up-facing side below X-axis"
-                   <| assert
-                   <| C2D.isOutside [ floorAt (Vec2.vec2 0 -10) ] (Vec2.vec2 0 -3)
-
-          , test "On the line counts as being inside"
-                   <| assert
-                   <| C2D.isInside [ floorAt (Vec2.vec2 0 0) ] (Vec2.vec2 0 0)
-                           
-          , test "Point in +Y is inside down-facing side on X-axis"
-                   <| assert
-                   <| C2D.isInside [ ceilingAt (Vec2.vec2 0 0) ] (Vec2.vec2 0 3)
-                           
-          , test "Point in quadrant II is outside up-facing side on X=Y"
-                   <| assert
-                   <| C2D.isOutside [ slopeAt (Vec2.vec2 10 10) ] (Vec2.vec2 -1 2)
+emptyHulls : Test
+emptyHulls =
+  suite "Vector lists that construct empty hulls"
+          [ testBadHull "No vectors"
+                          []
+          , testBadHull "One vector"
+                          [ Vec2.vec2 1 1
+                          ]
+          , testBadHull "Two vectors"
+                          [ Vec2.vec2 1 1
+                          , Vec2.vec2 2 2
+                          ]
+          , testBadHull "Repeat vector"
+                          [ Vec2.vec2 1 1
+                          , Vec2.vec2 1 1
+                          , Vec2.vec2 1 1
+                          ]
+          , testBadHull "Clockwise path"
+                          [ Vec2.vec2 0 2
+                          , Vec2.vec2 2 2
+                          , Vec2.vec2 1 1
+                          ]
+          , testBadHull "path with concavity"
+                          [ Vec2.vec2 0 0
+                          , Vec2.vec2 2 -1
+                          , Vec2.vec2 1 -1
+                          , Vec2.vec2 1 1
+                          , Vec2.vec2 2 1
+                          , Vec2.vec2 0 0
+                          ]
           ]
-  
+                   
+triangleHull : Test
+triangleHull =
+  {-
+   ^
+   |
+   +-----+
+   |\.../
+   | \./
+   |  +
+   |
+   |
+   +------>
+   -}
+  suite "Triangular hulls around (1,1) - (2,2) - (0,2)"
+          [ testGoodHull "Simple triangle"
+                           [ Vec2.vec2 1 1
+                           , Vec2.vec2 2 2
+                           , Vec2.vec2 0 2
+                           ]
+          , testGoodHull "Triangle with double vertex"
+                           [ Vec2.vec2 1 1
+                           , Vec2.vec2 2 2
+                           , Vec2.vec2 2 2
+                           , Vec2.vec2 0 2
+                           ]
+          , testGoodHull "Triangle with extra constraints"
+                           [ Vec2.vec2 0 0
+                           , Vec2.vec2 2 2
+                           , Vec2.vec2 0 2
+                           , Vec2.vec2 2 0
+                           , Vec2.vec2 3 3
+                           , Vec2.vec2 -1 3
+                           ]
+          ]
 
-twoSides : Test
-twoSides =
+
+testBadHull : String -> List Vec2 -> Test
+testBadHull name vectors =
   let
-    {-
-         /
-        /    
-    ---+---
-      /....
-     /.....
-
-     -}
-    
     hull =
-      [ floorAt (Vec2.vec2 0 0)
-      , slopeAt (Vec2.vec2 0 0)
-      ]
+      C2D.fromVectors vectors
+
+    testOutside position =
+      C2D.isOutside (Vec2.fromTuple position) hull
+        |> assert
+        |> test (toString position)
   in
-    suite "Two-sided hull"
-            [ test "Point is inside hull if inside both sides"
-                     <| assert
-                     <| C2D.isInside hull (Vec2.vec2 2 -1)
-
-            , test "Point is outside hull if outside both sides"
-                     <| assert
-                     <| C2D.isOutside hull (Vec2.vec2 -2 1)
-
-            , test "Point is outside hull if inside only one side"
-                     <| assert
-                     <| C2D.isOutside hull (Vec2.vec2 -2 -1)
-                        
-            , test "Point is inside if on both sides"
-                     <| assert
-                     <| C2D.isInside
-                          (C2D.fromVertexes
-                                (List.map Vec2.fromTuple [ (-90, 30), (-60, 50), (-70, 0) ]))
-                          (Vec2.vec2 -90 30)
+    suite name
+            [ testOutside (0, 0)
+            , testOutside (1, 1)
+            , testOutside (2, 2)
+            , testOutside (0, 2)
+            , testOutside (2, 0)
             ]
 
 
-fromSegments : Test
-fromSegments =
+testGoodHull : String -> List Vec2 -> Test
+testGoodHull name vectors =
   let
-    segments =
-      [ (Vec2.vec2 0 0, Vec2.vec2 0 2)
-      , (Vec2.vec2 0 1, Vec2.vec2 1 1)
-      ]
+    hull =
+      C2D.fromVectors vectors
 
-    nullSegments =
-      [ (Vec2.vec2 3 1, Vec2.vec2 3 1)
-      ]
+    testOutside position =
+      C2D.isOutside (Vec2.fromTuple position) hull
+        |> assert
+        |> test (toString position ++ " outside")
 
-    expectedHull =
-      [ { keyPoint = Vec2.vec2 0 0, normal = Vec2.vec2 -1 0 }
-      , { keyPoint = Vec2.vec2 0 1, normal = Vec2.vec2 0 1 }
-      ]
+    testInside position =
+      C2D.isInside (Vec2.fromTuple position) hull
+        |> assert
+        |> test (toString position ++ " inside")
   in
-    suite "Making a hull from a list of line segments"
-            [ test "First point is key point, normal directed anti-clockwise"
-                     <| compare2dHulls expectedHull (C2D.fromSegments segments)
-                        
-            , test "Line segment length 0 does not return a side"
-                     <| compare2dHulls [] (C2D.fromSegments nullSegments)
+    suite name
+            [ testInside (2, 2)
+            , testInside (1, 2)
+            , testInside (1, 1.5)
+            , testOutside (0, 1)
+            , testOutside (1, 0)
+            , testOutside (2, 0)
             ]
-
-
-fromVertexes : Test
-fromVertexes =
-  let
-    shortList =
-      [ Vec2.vec2 0 0
-      , Vec2.vec2 1 1
-      ]
-
-    triangleVertexes =
-      [ Vec2.vec2 0 0
-      , Vec2.vec2 4 3
-      , Vec2.vec2 4 0
-      ]
-
-    triangleSides =
-      [ { keyPoint = Vec2.vec2 0 0, normal = Vec2.vec2 -0.6 0.8 }
-      , { keyPoint = Vec2.vec2 4 3, normal = Vec2.vec2 1 0 }
-      , { keyPoint = Vec2.vec2 4 0, normal = Vec2.vec2 0 -1 }
-      ]
-
-    doubleVertexes =
-      [ Vec2.vec2 4 3
-      , Vec2.vec2 4 5
-      , Vec2.vec2 4 3
-      ]
-
-    doubleSides =
-      [ { keyPoint = Vec2.vec2 4 3, normal = Vec2.vec2 -1 0 }
-      , { keyPoint = Vec2.vec2 4 5, normal = Vec2.vec2 1 0 }
-      ]
-  in
-    suite "Making a hull from a list of points"
-            [ test "Two or fewer points returns an empty hull"
-                     <| compare2dHulls [] (C2D.fromVertexes shortList)
-
-            , test "Three or more points returns sides connecting all in series"
-                     <| compare2dHulls triangleSides (C2D.fromVertexes triangleVertexes)
-                        
-            , test "Line segment length 0 does not return a side"
-                     <| compare2dHulls doubleSides (C2D.fromVertexes doubleVertexes)
-            ]
-
-
-compare2dHulls : C2D.Hull -> C2D.Hull -> Assertion
-compare2dHulls expected actual =
-  assertEqual (C2D.toPrintable expected) (C2D.toPrintable actual)
-
-
-floorAt : Vec2 -> C2D.Side
-floorAt p =
-  { keyPoint = p, normal = Vec2.vec2 0 1 }
-
-
-ceilingAt : Vec2 -> C2D.Side
-ceilingAt p =
-  { keyPoint = p, normal = Vec2.vec2 0 -1 }
-
-
-slopeAt : Vec2 -> C2D.Side
-slopeAt p =
-  { keyPoint = p, normal = Vec2.vec2 -1 1 }
-
+  
+         
 
 {-
 Three Dimensions
