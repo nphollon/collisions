@@ -17,12 +17,11 @@ allTests : Test
 allTests =
   suite "All tests"
           [ suite "2D"
-                    [ emptyHulls
-                    , triangleHull
+                    [ empty2dHulls
+                    , triangleHulls
                     ]
           , suite "3D"
-                    [ fromTriangles
-                    , noFaces
+                    [ noFaces
                     , oneFace
                     , twoFaces
                     ]
@@ -33,40 +32,40 @@ allTests =
 Two Dimensions
 -}
 
-emptyHulls : Test
-emptyHulls =
+empty2dHulls : Test
+empty2dHulls =
   suite "Vector lists that construct empty hulls"
-          [ testBadHull "No vectors"
-                          []
-          , testBadHull "One vector"
-                          [ Vec2.vec2 1 1
-                          ]
-          , testBadHull "Two vectors"
-                          [ Vec2.vec2 1 1
-                          , Vec2.vec2 2 2
-                          ]
-          , testBadHull "Repeat vector"
-                          [ Vec2.vec2 1 1
-                          , Vec2.vec2 1 1
-                          , Vec2.vec2 1 1
-                          ]
-          , testBadHull "Clockwise path"
-                          [ Vec2.vec2 0 2
-                          , Vec2.vec2 2 2
-                          , Vec2.vec2 1 1
-                          ]
-          , testBadHull "path with concavity"
-                          [ Vec2.vec2 0 0
-                          , Vec2.vec2 2 -1
-                          , Vec2.vec2 1 -1
-                          , Vec2.vec2 1 1
-                          , Vec2.vec2 2 1
-                          , Vec2.vec2 0 0
-                          ]
+          [ testBad2dHull "No vectors"
+                            []
+          , testBad2dHull "One vector"
+                            [ Vec2.vec2 1 1
+                            ]
+          , testBad2dHull "Two vectors"
+                            [ Vec2.vec2 1 1
+                            , Vec2.vec2 2 2
+                            ]
+          , testBad2dHull "Repeat vector"
+                            [ Vec2.vec2 1 1
+                            , Vec2.vec2 1 1
+                            , Vec2.vec2 1 1
+                            ]
+          , testBad2dHull "Clockwise path"
+                            [ Vec2.vec2 0 2
+                            , Vec2.vec2 2 2
+                            , Vec2.vec2 1 1
+                            ]
+          , testBad2dHull "path with concavity"
+                            [ Vec2.vec2 0 0
+                            , Vec2.vec2 2 -1
+                            , Vec2.vec2 1 -1
+                            , Vec2.vec2 1 1
+                            , Vec2.vec2 2 1
+                            , Vec2.vec2 0 0
+                            ]
           ]
                    
-triangleHull : Test
-triangleHull =
+triangleHulls : Test
+triangleHulls =
   {-
    ^
    |
@@ -79,30 +78,30 @@ triangleHull =
    +------>
    -}
   suite "Triangular hulls around (1,1) - (2,2) - (0,2)"
-          [ testGoodHull "Simple triangle"
-                           [ Vec2.vec2 1 1
-                           , Vec2.vec2 2 2
-                           , Vec2.vec2 0 2
-                           ]
-          , testGoodHull "Triangle with double vertex"
-                           [ Vec2.vec2 1 1
-                           , Vec2.vec2 2 2
-                           , Vec2.vec2 2 2
-                           , Vec2.vec2 0 2
-                           ]
-          , testGoodHull "Triangle with extra constraints"
-                           [ Vec2.vec2 0 0
-                           , Vec2.vec2 2 2
-                           , Vec2.vec2 0 2
-                           , Vec2.vec2 2 0
-                           , Vec2.vec2 3 3
-                           , Vec2.vec2 -1 3
-                           ]
+          [ testGood2dHull "Simple triangle"
+                             [ Vec2.vec2 1 1
+                             , Vec2.vec2 2 2
+                             , Vec2.vec2 0 2
+                             ]
+          , testGood2dHull "Triangle with double vertex"
+                             [ Vec2.vec2 1 1
+                             , Vec2.vec2 2 2
+                             , Vec2.vec2 2 2
+                             , Vec2.vec2 0 2
+                             ]
+          , testGood2dHull "Triangle with extra constraints"
+                             [ Vec2.vec2 0 0
+                             , Vec2.vec2 2 2
+                             , Vec2.vec2 0 2
+                             , Vec2.vec2 2 0
+                             , Vec2.vec2 3 3
+                             , Vec2.vec2 -1 3
+                             ]
           ]
 
 
-testBadHull : String -> List Vec2 -> Test
-testBadHull name vectors =
+testBad2dHull : String -> List Vec2 -> Test
+testBad2dHull name vectors =
   let
     hull =
       C2D.fromVectors vectors
@@ -121,8 +120,8 @@ testBadHull name vectors =
             ]
 
 
-testGoodHull : String -> List Vec2 -> Test
-testGoodHull name vectors =
+testGood2dHull : String -> List Vec2 -> Test
+testGood2dHull name vectors =
   let
     hull =
       C2D.fromVectors vectors
@@ -152,64 +151,56 @@ testGoodHull name vectors =
 Three Dimensions
 -}
 
-fromTriangles : Test
-fromTriangles =
-  let
-    precision =
-      1E-6
-        
-    triangles =
-      [ (Vec3.vec3 0 0 0, Vec3.vec3 2 0 0, Vec3.vec3 0 1 0)
-      , (Vec3.vec3 1 1 1, Vec3.vec3 1 2 1, Vec3.vec3 1 1 2)
-      , (Vec3.vec3 -1 -2 -3, Vec3.vec3 -1 -2 -4, Vec3.vec3 0 -2 -3)
-      ]
-
-    linesAndTriangles =
-      [ (Vec3.vec3 2 2 2, Vec3.vec3 2 2 2, Vec3.vec3 3 0 0)
-      , (Vec3.vec3 0 0 0, Vec3.vec3 0 0 5, Vec3.vec3 0 0 9)
-      ] ++ triangles
-
-    expectedHull =
-      [ { keyPoint = Vec3.vec3 0 0 0, normal = Vec3.vec3 0 0 1 }
-      , { keyPoint = Vec3.vec3 1 1 1, normal = Vec3.vec3 1 0 0 }
-      , { keyPoint = Vec3.vec3 -1 -2 -3, normal = Vec3.vec3 0 -1 0 }
-      ]
-  in
-    suite "Making a 3D hull from a list of triangles"
-            [ test "key point is first point, normal is cross product of face vectors"
-                     <| compare3dHulls expectedHull (C3D.fromTriangles triangles)
-                        
-            , test "degenerate triangles do not get turned into faces"
-                     <| compare3dHulls expectedHull (C3D.fromTriangles linesAndTriangles)
-            ]
-
 
 noFaces : Test
 noFaces =
-  test "Point is not inside a hull with no faces"
-         <| assert
-         <| C3D.isOutside [] (Vec3.vec3 0 0 0)
+  let
+    testOutside position hull =
+      test (toString position)
+             <| assert
+             <| C3D.isOutside (Vec3.fromTuple position) hull
+                
+    testBad3dHull name hull =
+      suite name
+            [ testOutside (0, 0, 0) hull
+            , testOutside (1, 1, 1) hull
+            , testOutside (2, 2, 2) hull
+            ]
+  in
+    suite "Triangles that construct empty hulls"
+            [ testBad3dHull "No triangles"
+                              (C3D.fromTriangles [])
+            , testBad3dHull "Triangle with repeat vertex"
+                              (C3D.fromTriangles
+                                    [ (Vec3.vec3 1 1 1, Vec3.vec3 2 1 1, Vec3.vec3 1 1 1) ]
+                              )
+            ]
 
 
 oneFace : Test
 oneFace =
-  suite "One-faced hull"
-          [ test "Point in -Z is inside out-facing surface on Z=0"
-                   <| assert
-                   <| C3D.isInside [ face (0,0,0) (0,0,1) ] (Vec3.vec3 0 0 -5)
+  let
+    hull =
+      C3D.fromTriangles
+           [ (Vec3.vec3 0 0 0, Vec3.vec3 1 1 0, Vec3.vec3 0 1 0) ]
 
-          , test "Point in +Z is inside in-facing surface on Z=0"
-                   <| assert
-                   <| C3D.isInside [ face (0,0,0) (0,0,-1) ] (Vec3.vec3 0 0 5)
-          , test "Point in -Y is inside up-facing surface on Y=0"
-                   <| assert
-                   <| C3D.isInside [ face (0,0,0) (0,1,0) ] (Vec3.vec3 0 -5 5)
-          , test "Point at X = 5 is outside left-facing surface on X = 10"
-                   <| assert
-                   <| C3D.isOutside [ face (10,0,0) (-1,0,0) ] (Vec3.vec3 5 0 0)
-          , test "On the face counts as being inside"
-                   <| assert
-                   <| C3D.isInside [ face (1, 1, 1) (0.6, -0.8, 0) ] (Vec3.vec3 1.003 1.004 1)
+    testOutside name position =
+      test name
+             <| assert
+             <| C3D.isOutside (Vec3.fromTuple position) hull
+
+    testInside name position =
+      test name
+             <| assert
+             <| C3D.isInside (Vec3.fromTuple position) hull
+  in
+    suite "One-faced hull"
+          [ testInside "at a vertex" (1, 1, 0)
+          , testInside "on an edge" (0.5, 1, 0)
+          , testInside "inside triangle" (0.2, 0.5, 0)
+          , testInside "coplanar with triangle" (-10, -2, 0)
+          , testOutside "above triangle" (0.2, 0.5, 1)
+          , testInside "below triangle" (0.2, 0.5, -1)
           ]
 
 
@@ -217,33 +208,28 @@ twoFaces : Test
 twoFaces =
   let
     hull =
-      [ face (0, 0, 0) (0, 1, 0) 
-      , face (0, 0, 0) (1, 0, 0)
-      ]
+      C3D.fromTriangles
+           [ (Vec3.vec3 0 0 0, Vec3.vec3 1 1 0, Vec3.vec3 0 1 0)
+           , (Vec3.vec3 0 1 0, Vec3.vec3 1 1 0, Vec3.vec3 0 1 -1)
+           ]
+
+    testOutside name position =
+      test name
+             <| assert
+             <| C3D.isOutside (Vec3.fromTuple position) hull
+
+    testInside name position =
+      test name
+             <| assert
+             <| C3D.isInside (Vec3.fromTuple position) hull
   in
     suite "Two-faced hull"
-            [ test "point is inside if inside both faces"
-                     <| assert
-                     <| C3D.isInside hull (Vec3.vec3 -10 -10 -10)
-            , test "point is outside if outside both faces"
-                     <| assert
-                     <| C3D.isOutside hull (Vec3.vec3 10 10 -10)
-            , test "point is outside if inside only one face"
-                     <| assert
-                     <| C3D.isOutside hull (Vec3.vec3 10 -10 -10)
+            [ testInside "at a vertex" (1, 1, 0)
+            , testInside "on an edge" (0.5, 1, 0)
+            , testInside "inside both faces" (0.5, 0.5, -0.5)
+            , testOutside "inside one face" (0.5, 0.5, 2)
+            , testOutside "outside both faces" (1, 3, -1)
             ]
-
-
-compare3dHulls : C3D.Hull -> C3D.Hull -> Assertion
-compare3dHulls expected actual =
-  assertEqual (C3D.toPrintable expected) (C3D.toPrintable actual)
-
-
-face : (Float, Float, Float) -> (Float, Float, Float)  -> C3D.Face
-face keyPoint normal =
-  { keyPoint = Vec3.fromTuple keyPoint
-  , normal = Vec3.fromTuple normal
-  }
 
 {-
 Command line test harness

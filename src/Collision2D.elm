@@ -2,11 +2,11 @@ module Collision2D (isOutside, isInside, fromVectors, Hull) where
 
 {-| Collision detection in two dimensions
 
-# Building a hull
-@docs fromVertexes
-
 # Collision Detection
 @docs isInside, isOutside
+
+# Building a hull
+@docs fromVertexes
 -}
 
 
@@ -52,18 +52,20 @@ fromSegments segments =
 {-| Returns `True` if the given position is on or in the given hull.
 Defaults to `False` if the hull has no sides.
     
+    import Math.Vector2 exposing (vec2)
+
     hull =
       fromVertexes
-        [ Vec2.vec2 0 1
-        , Vec2.vec2 3 4
-        , Vec2.vec2 1 0
+        [ vec2 0 1
+        , vec2 3 4
+        , vec2 1 0
         ]
 
-    isInside hull (Vec2.vec2 1 1) == True
+    isInside hull (vec2 1 1) == True
 
-    isInside hull (Vec2.vec2 -1 2) == False
+    isInside hull (vec2 -1 2) == False
 
-    isInside hull (Vec2.vec2 0 0) == True
+    isInside hull (vec2 0 0) == True
 
 -}
 isInside : Vec2 -> Hull -> Bool
@@ -82,26 +84,16 @@ isOutside : Vec2 -> Hull -> Bool
 isOutside point boundary = not (isInside point boundary)
 
 
-{-| A side is a straight-line boundary with an inside and an outside. The key
+{-| A collection of sides that together represent a hull. This library
+interprets the sides as forming the smallest possible convex polygon.
+
+A side is a straight-line boundary with an inside and an outside. The key
 point is a location on the boundary. The
 [normal](https://en.wikipedia.org/wiki/Normal_%28geometry%29) is a unit vector
 perpendicular to the boundary.
 
 Any point on the side can be a key point, so sides with different key points can
 be equivalent sometimes.
-
-    -- These sides are equivalent because their key points are on the same line
-    { keyPoint = Vec2.vec2 1 0, normal = Vec2.vec2 0 1 } ==
-      { keyPoint = Vec2.vec2 -1 0, normal = Vec2.vec2 0 1 }
-
-    -- These sides are parallel because their normals are equal
-    -- and their key points are on different lines
-    { keyPoint = Vec2.vec2 2 1, normal = Vec2.vec2 0.6 0.8 } ==
-      { keyPoint = Vec2.vec2 -3 -3, normal = Vec2.vec2 0.6 0.8 }
-
-
-A collection of sides that together represent a hull. This library
-interprets the sides as forming the smallest possible convex polygon.
 
 Since the sides have no endpoints, infinite-area hulls are possible (e.g. if
 there are less than three sides).
