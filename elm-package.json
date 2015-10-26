@@ -1,12 +1,15 @@
 {
-    "version": "1.0.0",
+    "version": "1.0.1",
     "summary": "Collision detection of polygonal & polyhedral shapes",
     "repository": "https://github.com/nphollon/collisions.git",
     "license": "MIT",
     "source-directories": [
         "src"
     ],
-    "exposed-modules": ["Collision2D", "Collision3D"],
+    "exposed-modules": [
+        "Collision2D",
+        "Collision3D"
+    ],
     "dependencies": {
         "deadfoxygrandpa/Elm-Test": "1.0.4 <= v < 2.0.0",
         "elm-lang/core": "2.1.0 <= v < 3.0.0",
