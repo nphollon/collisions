@@ -1,5 +1,5 @@
 {
-    "version": "1.0.1",
+    "version": "1.0.2",
     "summary": "Collision detection of polygonal & polyhedral shapes",
     "repository": "https://github.com/nphollon/collisions.git",
     "license": "MIT",
