@@ -1,0 +1,16 @@
+{
+    "version": "1.0.0",
+    "summary": "examples",
+    "repository": "https://github.com/nphollon/collisions.git",
+    "license": "MIT",
+    "source-directories": [
+        ".",
+        "../src"
+    ],
+    "exposed-modules": [],
+    "dependencies": {
+        "elm-community/elm-linear-algebra": "1.0.1 <= v < 2.0.0",
+        "elm-lang/core": "3.0.0 <= v < 4.0.0"
+    },
+    "elm-version": "0.16.0 <= v < 0.17.0"
+}
