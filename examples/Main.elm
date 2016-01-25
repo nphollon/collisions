@@ -3,11 +3,10 @@ module Main (..) where
 import Color exposing (Color)
 import Graphics.Element as Element
 import Graphics.Collage as Collage
-import Math.Vector2 as Vec2 exposing (Vec2)
 import Mouse
 import Text
 import String
-import Collision2D
+import Collision2D exposing (Vector)
 
 
 main : Signal Element.Element
@@ -20,14 +19,14 @@ main =
 
 
 type alias Model =
-    { position : Vec2
+    { position : Vector
     , hit : Bool
     }
 
 
 init : Model
 init =
-    { position = Vec2.vec2 0 0
+    { position = vec2 0 0
     , hit = False
     }
 
@@ -49,15 +48,15 @@ scale =
 
 
 type Update
-    = CursorAt Vec2
+    = CursorAt Vector
 
 
 input : Signal Update
 input =
     let
         toModelSpace ( mouseX, mouseY ) =
-            Vec2.vec2 (toFloat mouseX) (toFloat (negate mouseY))
-                |> Vec2.add (Vec2.vec2 -scale scale)
+            vec2 (toFloat mouseX) (toFloat (negate mouseY))
+                |> vec2Add (vec2 -scale scale)
                 |> CursorAt
     in
         Signal.map toModelSpace Mouse.position
@@ -75,7 +74,36 @@ update up model =
 
 theBoundary : List Collision2D.Hull
 theBoundary =
-    List.map (List.map Vec2.fromTuple >> Collision2D.fromVectors) theShapes
+    List.map (List.map vec2FromTuple >> Collision2D.fromVectors) theShapes
+
+
+vec2FromTuple : ( Float, Float ) -> Vector
+vec2FromTuple ( x, y ) =
+    { x = x, y = y }
+
+
+vec2ToTuple : Vector -> ( Float, Float )
+vec2ToTuple { x, y } =
+    ( x, y )
+
+
+vec2 : Float -> Float -> Vector
+vec2 x y =
+    { x = x, y = y }
+
+
+vec2Add : Vector -> Vector -> Vector
+vec2Add a b =
+    { x = a.x + b.x
+    , y = a.y + b.y
+    }
+
+
+vec2Scale : Float -> Vector -> Vector
+vec2Scale a v =
+    { x = v.x * a
+    , y = v.y * a
+    }
 
 
 
@@ -96,8 +124,8 @@ picture model =
     Collage.collage
         (2 * scale)
         (2 * scale)
-        [ edge Color.lightGrey (Vec2.vec2 1 0)
-        , edge Color.lightGrey (Vec2.vec2 0 1)
+        [ edge Color.lightGrey (vec2 1 0)
+        , edge Color.lightGrey (vec2 0 1)
         , drawShapes theShapes
         ]
 
@@ -113,16 +141,16 @@ drawShapes shapes =
         Collage.group (List.map2 drawShape palette shapes)
 
 
-ray : Vec2 -> Collage.Form
+ray : Vector -> Collage.Form
 ray vec =
-    line Collage.defaultLine ( 0, 0 ) (Vec2.toTuple vec)
+    line Collage.defaultLine ( 0, 0 ) (vec2ToTuple vec)
 
 
-edge : Color -> Vec2 -> Collage.Form
+edge : Color -> Vector -> Collage.Form
 edge color normal =
     let
         ( nX, nY ) =
-            Vec2.toTuple (Vec2.scale scale normal)
+            vec2ToTuple (vec2Scale scale normal)
     in
         line (Collage.dashed color) ( -nY, nX ) ( nY, -nX )
 
@@ -136,7 +164,7 @@ text : Model -> Element.Element
 text model =
     let
         positionString =
-            model.position |> Vec2.toTuple |> toString
+            model.position |> vec2ToTuple |> toString
 
         hitString =
             if model.hit then

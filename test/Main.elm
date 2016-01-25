@@ -3,7 +3,6 @@ module Main (..) where
 import ElmTest exposing (..)
 import Console
 import Task
-import Math.Vector2 as Vec2 exposing (Vec2)
 import Collision2D as C2D
 import Math.Vector3 as Vec3 exposing (Vec3)
 import Collision3D as C3D
@@ -42,33 +41,33 @@ empty2dHulls =
             []
         , testBad2dHull
             "One vector"
-            [ Vec2.vec2 1 1
+            [ vec2 1 1
             ]
         , testBad2dHull
             "Two vectors"
-            [ Vec2.vec2 1 1
-            , Vec2.vec2 2 2
+            [ vec2 1 1
+            , vec2 2 2
             ]
         , testBad2dHull
             "Repeat vector"
-            [ Vec2.vec2 1 1
-            , Vec2.vec2 1 1
-            , Vec2.vec2 1 1
+            [ vec2 1 1
+            , vec2 1 1
+            , vec2 1 1
             ]
         , testBad2dHull
             "Clockwise path"
-            [ Vec2.vec2 0 2
-            , Vec2.vec2 2 2
-            , Vec2.vec2 1 1
+            [ vec2 0 2
+            , vec2 2 2
+            , vec2 1 1
             ]
         , testBad2dHull
             "path with concavity"
-            [ Vec2.vec2 0 0
-            , Vec2.vec2 2 -1
-            , Vec2.vec2 1 -1
-            , Vec2.vec2 1 1
-            , Vec2.vec2 2 1
-            , Vec2.vec2 0 0
+            [ vec2 0 0
+            , vec2 2 -1
+            , vec2 1 -1
+            , vec2 1 1
+            , vec2 2 1
+            , vec2 0 0
             ]
         ]
 
@@ -90,37 +89,37 @@ triangleHulls =
         "Triangular hulls around (1,1) - (2,2) - (0,2)"
         [ testGood2dHull
             "Simple triangle"
-            [ Vec2.vec2 1 1
-            , Vec2.vec2 2 2
-            , Vec2.vec2 0 2
+            [ vec2 1 1
+            , vec2 2 2
+            , vec2 0 2
             ]
         , testGood2dHull
             "Triangle with double vertex"
-            [ Vec2.vec2 1 1
-            , Vec2.vec2 2 2
-            , Vec2.vec2 2 2
-            , Vec2.vec2 0 2
+            [ vec2 1 1
+            , vec2 2 2
+            , vec2 2 2
+            , vec2 0 2
             ]
         , testGood2dHull
             "Triangle with extra constraints"
-            [ Vec2.vec2 0 0
-            , Vec2.vec2 2 2
-            , Vec2.vec2 0 2
-            , Vec2.vec2 2 0
-            , Vec2.vec2 3 3
-            , Vec2.vec2 -1 3
+            [ vec2 0 0
+            , vec2 2 2
+            , vec2 0 2
+            , vec2 2 0
+            , vec2 3 3
+            , vec2 -1 3
             ]
         ]
 
 
-testBad2dHull : String -> List Vec2 -> Test
+testBad2dHull : String -> List C2D.Vector -> Test
 testBad2dHull name vectors =
     let
         hull =
             C2D.fromVectors vectors
 
         testOutside position =
-            C2D.isOutside (Vec2.fromTuple position) hull
+            C2D.isOutside (vec2FromTuple position) hull
                 |> assert
                 |> test (toString position)
     in
@@ -134,19 +133,19 @@ testBad2dHull name vectors =
             ]
 
 
-testGood2dHull : String -> List Vec2 -> Test
+testGood2dHull : String -> List C2D.Vector -> Test
 testGood2dHull name vectors =
     let
         hull =
             C2D.fromVectors vectors
 
         testOutside position =
-            C2D.isOutside (Vec2.fromTuple position) hull
+            C2D.isOutside (vec2FromTuple position) hull
                 |> assert
                 |> test (toString position ++ " outside")
 
         testInside position =
-            C2D.isInside (Vec2.fromTuple position) hull
+            C2D.isInside (vec2FromTuple position) hull
                 |> assert
                 |> test (toString position ++ " inside")
     in
@@ -251,6 +250,16 @@ twoFaces =
             , testOutside "inside one face" ( 0.5, 0.5, 2 )
             , testOutside "outside both faces" ( 1, 3, -1 )
             ]
+
+
+vec2FromTuple : ( Float, Float ) -> C2D.Vector
+vec2FromTuple ( x, y ) =
+    { x = x, y = y }
+
+
+vec2 : Float -> Float -> C2D.Vector
+vec2 x y =
+    { x = x, y = y }
 
 
 

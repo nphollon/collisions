@@ -1,4 +1,4 @@
-module Collision2D (isOutside, isInside, fromVectors, Hull) where
+module Collision2D (isOutside, isInside, fromVectors, Hull, Vector) where
 
 {-| Collision detection in two dimensions
 
@@ -6,7 +6,7 @@ module Collision2D (isOutside, isInside, fromVectors, Hull) where
 @docs isInside, isOutside
 
 # Building a hull
-@docs fromVectors
+@docs Vector, fromVectors
 
 # Type
 @docs Hull
@@ -15,18 +15,26 @@ module Collision2D (isOutside, isInside, fromVectors, Hull) where
 import Math.Vector2 as Vec2 exposing (Vec2)
 
 
+type alias Vector =
+    { x : Float
+    , y : Float
+    }
+
+
 {-| Given the vertexes of a polygon, compute a hull. Vertexes must be ordered
 counter-clockwise around the center of the shape. Only works for convex polygons.
 
 Returns an empty hull if given less than three vertexes.
 -}
-fromVectors : List Vec2 -> Hull
+fromVectors : List Vector -> Hull
 fromVectors vertexes =
     let
+        vex = List.map Vec2.fromRecord vertexes
+
         segments =
-            (List.drop 1 vertexes)
-                ++ (List.take 1 vertexes)
-                |> List.map2 (,) vertexes
+            (List.drop 1 vex)
+                ++ (List.take 1 vex)
+                |> List.map2 (,) vex
     in
         if List.length vertexes >= 3 then
             fromSegments segments
@@ -75,11 +83,11 @@ Defaults to `False` if the hull has no sides.
     isInside hull (vec2 0 0) == True
 
 -}
-isInside : Vec2 -> Hull -> Bool
+isInside : Vector -> Hull -> Bool
 isInside point (Bounded sides) =
     let
         isBehind side =
-            Vec2.dot side.normal (Vec2.sub point side.keyPoint) < 1.0e-6
+            Vec2.dot side.normal (Vec2.sub (Vec2.fromRecord point) side.keyPoint) < 1.0e-6
     in
         not (List.isEmpty sides) && List.all isBehind sides
 
@@ -87,7 +95,7 @@ isInside point (Bounded sides) =
 {-| Returns `True` if the given position is outside the given hull.
 The logical inverse of `isInside`.
 -}
-isOutside : Vec2 -> Hull -> Bool
+isOutside : Vector -> Hull -> Bool
 isOutside point boundary =
     not (isInside point boundary)
 
