@@ -1,4 +1,4 @@
-module Main (..) where
+module Demo2D (main) where
 
 import Color exposing (Color)
 import Graphics.Element as Element
