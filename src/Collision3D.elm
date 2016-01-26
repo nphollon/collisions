@@ -2,23 +2,26 @@ module Collision3D (isOutside, isInside, fromTriangles, Hull, Vec3, vec3) where
 
 {-| Collision detection in three dimensions
 
+# Building a Hull
+@docs Vec3, Hull, vec3, fromTriangles
+
 # Collision Detection
 @docs isInside, isOutside
-
-# Building a Hull
-@docs Vector, Hull, fromTriangles
-
 -}
 
 import Vec3
 
 
-{-| -}
+{-| A vector with x, y, and z components
+-}
 type alias Vec3 =
     Vec3.Vec3
 
 
-{-| -}
+{-| Build a Vec3 given x, y, and z
+
+    vec3 1 2 3 -- x = 1, y = 2, z = 3
+-}
 vec3 : Float -> Float -> Float -> Vec3
 vec3 =
     Vec3.vec3
@@ -55,8 +58,6 @@ fromTriangles triangles =
 {-| Returns `True` if the given position is on or in the given hull.
 Defaults to `False` if the hull has no sides.
 
-    import Math.Vector3 exposing (vec3)
-
     hull =
       fromTriangles
         [ (vec3 0 0 0, vec3 0 0 5, vec3 10 0 0)
@@ -65,11 +66,11 @@ Defaults to `False` if the hull has no sides.
         , (vec3 10 0 0, vec3 0 0 5, vec3 0 5 0)
         ]
 
-    isInside hull (Vec3.vec3 5 1 1) == True
+    isInside hull (vec3 5 1 1) == True
 
-    isInside hull (Vec3.vec3 -1 2 -1) == False
+    isInside hull (vec3 -1 2 -1) == False
 
-    isInside hull (Vec3.vec3 0 0 0) == True
+    isInside hull (vec3 0 0 0) == True
 -}
 isInside : Vec3 -> Hull -> Bool
 isInside point (Bounded faces) =
@@ -89,7 +90,7 @@ isOutside point boundary =
 
 
 {-| A collection of faces that together represent a shape. This library interprets
-the sides as forming the smallest possible convex polyhedron.
+the faces as forming the smallest possible convex polyhedron.
 -}
 type Hull
     = Bounded (List Face)

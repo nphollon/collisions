@@ -2,22 +2,26 @@ module Collision2D (isOutside, isInside, fromVectors, Hull, Vec2, vec2) where
 
 {-| Collision detection in two dimensions
 
+# Building a Hull
+@docs Vec2, Hull, vec2, fromVectors
+
 # Collision Detection
 @docs isInside, isOutside
-
-# Building a Hull
-@docs Vector, Hull, vec2, fromVectors
-
 -}
 
 import Vec2
 
 
-{-| -}
+{-| A vector with x and y components
+-}
 type alias Vec2 =
     Vec2.Vec2
 
 
+{-| Build a Vec2 given x and y
+
+    vec2 1 2 -- x = 1, y = 2
+-}
 vec2 : Float -> Float -> Vec2
 vec2 =
     Vec2.vec2
@@ -66,8 +70,6 @@ fromSegments segments =
 
 {-| Returns `True` if the given position is on or in the given hull.
 Defaults to `False` if the hull has no sides.
-
-    import Math.Vector2 exposing (vec2)
 
     hull =
       fromVertexes
