@@ -1,4 +1,4 @@
-module Collision3D (isOutside, isInside, fromTriangles, Hull, Vec3) where
+module Collision3D (isOutside, isInside, fromTriangles, Hull, Vec3, vec3) where
 
 {-| Collision detection in three dimensions
 

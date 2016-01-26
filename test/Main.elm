@@ -3,7 +3,6 @@ module Main (..) where
 import ElmTest exposing (..)
 import Console
 import Task
-import Vec3
 import Collision2D as C2D
 import Collision3D as C3D
 
@@ -41,33 +40,33 @@ empty2dHulls =
             []
         , testBad2dHull
             "One vector"
-            [ vec2 1 1
+            [ C2D.vec2 1 1
             ]
         , testBad2dHull
             "Two vectors"
-            [ vec2 1 1
-            , vec2 2 2
+            [ C2D.vec2 1 1
+            , C2D.vec2 2 2
             ]
         , testBad2dHull
             "Repeat vector"
-            [ vec2 1 1
-            , vec2 1 1
-            , vec2 1 1
+            [ C2D.vec2 1 1
+            , C2D.vec2 1 1
+            , C2D.vec2 1 1
             ]
         , testBad2dHull
             "Clockwise path"
-            [ vec2 0 2
-            , vec2 2 2
-            , vec2 1 1
+            [ C2D.vec2 0 2
+            , C2D.vec2 2 2
+            , C2D.vec2 1 1
             ]
         , testBad2dHull
             "path with concavity"
-            [ vec2 0 0
-            , vec2 2 -1
-            , vec2 1 -1
-            , vec2 1 1
-            , vec2 2 1
-            , vec2 0 0
+            [ C2D.vec2 0 0
+            , C2D.vec2 2 -1
+            , C2D.vec2 1 -1
+            , C2D.vec2 1 1
+            , C2D.vec2 2 1
+            , C2D.vec2 0 0
             ]
         ]
 
@@ -89,39 +88,39 @@ triangleHulls =
         "Triangular hulls around (1,1) - (2,2) - (0,2)"
         [ testGood2dHull
             "Simple triangle"
-            [ vec2 1 1
-            , vec2 2 2
-            , vec2 0 2
+            [ C2D.vec2 1 1
+            , C2D.vec2 2 2
+            , C2D.vec2 0 2
             ]
         , testGood2dHull
             "Triangle with double vertex"
-            [ vec2 1 1
-            , vec2 2 2
-            , vec2 2 2
-            , vec2 0 2
+            [ C2D.vec2 1 1
+            , C2D.vec2 2 2
+            , C2D.vec2 2 2
+            , C2D.vec2 0 2
             ]
         , testGood2dHull
             "Triangle with extra constraints"
-            [ vec2 0 0
-            , vec2 2 2
-            , vec2 0 2
-            , vec2 2 0
-            , vec2 3 3
-            , vec2 -1 3
+            [ C2D.vec2 0 0
+            , C2D.vec2 2 2
+            , C2D.vec2 0 2
+            , C2D.vec2 2 0
+            , C2D.vec2 3 3
+            , C2D.vec2 -1 3
             ]
         ]
 
 
-testBad2dHull : String -> List C2D.Vector -> Test
+testBad2dHull : String -> List C2D.Vec2 -> Test
 testBad2dHull name vectors =
     let
         hull =
             C2D.fromVectors vectors
 
-        testOutside position =
-            C2D.isOutside (vec2FromTuple position) hull
+        testOutside ( x, y ) =
+            C2D.isOutside (C2D.vec2 x y) hull
                 |> assert
-                |> test (toString position)
+                |> test (toString ( x, y ))
     in
         suite
             name
@@ -133,21 +132,21 @@ testBad2dHull name vectors =
             ]
 
 
-testGood2dHull : String -> List C2D.Vector -> Test
+testGood2dHull : String -> List C2D.Vec2 -> Test
 testGood2dHull name vectors =
     let
         hull =
             C2D.fromVectors vectors
 
-        testOutside position =
-            C2D.isOutside (vec2FromTuple position) hull
+        testOutside ( x, y ) =
+            C2D.isOutside (C2D.vec2 x y) hull
                 |> assert
-                |> test (toString position ++ " outside")
+                |> test (toString ( x, y ) ++ " outside")
 
-        testInside position =
-            C2D.isInside (vec2FromTuple position) hull
+        testInside ( x, y ) =
+            C2D.isInside (C2D.vec2 x y) hull
                 |> assert
-                |> test (toString position ++ " inside")
+                |> test (toString ( x, y ) ++ " inside")
     in
         suite
             name
@@ -169,10 +168,10 @@ Three Dimensions
 noFaces : Test
 noFaces =
     let
-        testOutside position hull =
-            test (toString position)
+        testOutside ( x, y, z ) hull =
+            test (toString ( x, y, z ))
                 <| assert
-                <| C3D.isOutside (Vec3.fromTuple position) hull
+                <| C3D.isOutside (C3D.vec3 x y z) hull
 
         testBad3dHull name hull =
             suite
@@ -190,7 +189,7 @@ noFaces =
             , testBad3dHull
                 "Triangle with repeat vertex"
                 (C3D.fromTriangles
-                    [ ( Vec3.vec3 1 1 1, Vec3.vec3 2 1 1, Vec3.vec3 1 1 1 ) ]
+                    [ ( C3D.vec3 1 1 1, C3D.vec3 2 1 1, C3D.vec3 1 1 1 ) ]
                 )
             ]
 
@@ -200,17 +199,17 @@ oneFace =
     let
         hull =
             C3D.fromTriangles
-                [ ( Vec3.vec3 0 0 0, Vec3.vec3 1 1 0, Vec3.vec3 0 1 0 ) ]
+                [ ( C3D.vec3 0 0 0, C3D.vec3 1 1 0, C3D.vec3 0 1 0 ) ]
 
-        testOutside name position =
+        testOutside name ( x, y, z ) =
             test name
                 <| assert
-                <| C3D.isOutside (Vec3.fromTuple position) hull
+                <| C3D.isOutside (C3D.vec3 x y z) hull
 
-        testInside name position =
+        testInside name ( x, y, z ) =
             test name
                 <| assert
-                <| C3D.isInside (Vec3.fromTuple position) hull
+                <| C3D.isInside (C3D.vec3 x y z) hull
     in
         suite
             "One-faced hull"
@@ -228,19 +227,19 @@ twoFaces =
     let
         hull =
             C3D.fromTriangles
-                [ ( Vec3.vec3 0 0 0, Vec3.vec3 1 1 0, Vec3.vec3 0 1 0 )
-                , ( Vec3.vec3 0 1 0, Vec3.vec3 1 1 0, Vec3.vec3 0 1 -1 )
+                [ ( C3D.vec3 0 0 0, C3D.vec3 1 1 0, C3D.vec3 0 1 0 )
+                , ( C3D.vec3 0 1 0, C3D.vec3 1 1 0, C3D.vec3 0 1 -1 )
                 ]
 
-        testOutside name position =
+        testOutside name ( x, y, z ) =
             test name
                 <| assert
-                <| C3D.isOutside (Vec3.fromTuple position) hull
+                <| C3D.isOutside (C3D.vec3 x y z) hull
 
-        testInside name position =
+        testInside name ( x, y, z ) =
             test name
                 <| assert
-                <| C3D.isInside (Vec3.fromTuple position) hull
+                <| C3D.isInside (C3D.vec3 x y z) hull
     in
         suite
             "Two-faced hull"
@@ -250,16 +249,6 @@ twoFaces =
             , testOutside "inside one face" ( 0.5, 0.5, 2 )
             , testOutside "outside both faces" ( 1, 3, -1 )
             ]
-
-
-vec2FromTuple : ( Float, Float ) -> C2D.Vector
-vec2FromTuple ( x, y ) =
-    { x = x, y = y }
-
-
-vec2 : Float -> Float -> C2D.Vector
-vec2 x y =
-    { x = x, y = y }
 
 
 
