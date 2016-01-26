@@ -5,16 +5,15 @@ module Collision2D (isOutside, isInside, fromVectors, Hull, Vector) where
 # Collision Detection
 @docs isInside, isOutside
 
-# Building a hull
-@docs Vector, fromVectors
+# Building a Hull
+@docs Vector, Hull, fromVectors
 
-# Type
-@docs Hull
 -}
 
 import Math.Vector2 as Vec2 exposing (Vec2)
 
 
+{-| -}
 type alias Vector =
     { x : Float
     , y : Float
