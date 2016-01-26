@@ -1,4 +1,4 @@
-module Collision3D (isOutside, isInside, fromTriangles, Hull, Vector) where
+module Collision3D (isOutside, isInside, fromTriangles, Hull, Vec3) where
 
 {-| Collision detection in three dimensions
 
@@ -10,15 +10,18 @@ module Collision3D (isOutside, isInside, fromTriangles, Hull, Vector) where
 
 -}
 
-import Math.Vector3 as Vec3 exposing (Vec3)
+import Vec3
 
 
 {-| -}
-type alias Vector =
-    { x : Float
-    , y : Float
-    , z : Float
-    }
+type alias Vec3 =
+    Vec3.Vec3
+
+
+{-| -}
+vec3 : Float -> Float -> Float -> Vec3
+vec3 =
+    Vec3.vec3
 
 
 {-| Given a list of triangles, compute a hull. For a triangle of points (a,b,c),
@@ -30,12 +33,9 @@ The triangles passed to this function should form a polyhedron that is
 * convex (no dents)
 * closed (no holes)
 -}
-fromTriangles : List ( Vector, Vector, Vector ) -> Hull
+fromTriangles : List ( Vec3, Vec3, Vec3 ) -> Hull
 fromTriangles triangles =
     let
-        toVec3 ( a, b, c ) =
-            ( Vec3.fromRecord a, Vec3.fromRecord b, Vec3.fromRecord c )
-
         toFace ( a, b, c ) =
             { normal =
                 Vec3.normalize (Vec3.cross (Vec3.sub b a) (Vec3.sub c a))
@@ -47,7 +47,7 @@ fromTriangles triangles =
                 |> List.map (\f -> f vec)
                 |> List.all (not << isNaN)
     in
-        List.map (toVec3 >> toFace) triangles
+        List.map toFace triangles
             |> List.filter (.normal >> isDefined)
             |> Bounded
 
@@ -71,11 +71,11 @@ Defaults to `False` if the hull has no sides.
 
     isInside hull (Vec3.vec3 0 0 0) == True
 -}
-isInside : Vector -> Hull -> Bool
+isInside : Vec3 -> Hull -> Bool
 isInside point (Bounded faces) =
     let
         isBehind face =
-            Vec3.dot face.normal (Vec3.sub (Vec3.fromRecord point) face.keyPoint) < 1.0e-6
+            Vec3.dot face.normal (Vec3.sub point face.keyPoint) < 1.0e-6
     in
         not (List.isEmpty faces) && List.all isBehind faces
 
@@ -83,7 +83,7 @@ isInside point (Bounded faces) =
 {-| Returns `True` if the given position is outside the given hull.
 The logical inverse of `isInside`.
 -}
-isOutside : Vector -> Hull -> Bool
+isOutside : Vec3 -> Hull -> Bool
 isOutside point boundary =
     not (isInside point boundary)
 
