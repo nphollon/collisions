@@ -172,7 +172,7 @@ noFaces =
         testOutside position hull =
             test (toString position)
                 <| assert
-                <| C3D.isOutside (Vec3.fromTuple position) hull
+                <| C3D.isOutside (vec3FromTuple position) hull
 
         testBad3dHull name hull =
             suite
@@ -190,7 +190,7 @@ noFaces =
             , testBad3dHull
                 "Triangle with repeat vertex"
                 (C3D.fromTriangles
-                    [ ( Vec3.vec3 1 1 1, Vec3.vec3 2 1 1, Vec3.vec3 1 1 1 ) ]
+                    [ ( vec3 1 1 1, vec3 2 1 1, vec3 1 1 1 ) ]
                 )
             ]
 
@@ -200,17 +200,17 @@ oneFace =
     let
         hull =
             C3D.fromTriangles
-                [ ( Vec3.vec3 0 0 0, Vec3.vec3 1 1 0, Vec3.vec3 0 1 0 ) ]
+                [ ( vec3 0 0 0, vec3 1 1 0, vec3 0 1 0 ) ]
 
         testOutside name position =
             test name
                 <| assert
-                <| C3D.isOutside (Vec3.fromTuple position) hull
+                <| C3D.isOutside (vec3FromTuple position) hull
 
         testInside name position =
             test name
                 <| assert
-                <| C3D.isInside (Vec3.fromTuple position) hull
+                <| C3D.isInside (vec3FromTuple position) hull
     in
         suite
             "One-faced hull"
@@ -228,19 +228,19 @@ twoFaces =
     let
         hull =
             C3D.fromTriangles
-                [ ( Vec3.vec3 0 0 0, Vec3.vec3 1 1 0, Vec3.vec3 0 1 0 )
-                , ( Vec3.vec3 0 1 0, Vec3.vec3 1 1 0, Vec3.vec3 0 1 -1 )
+                [ ( vec3 0 0 0, vec3 1 1 0, vec3 0 1 0 )
+                , ( vec3 0 1 0, vec3 1 1 0, vec3 0 1 -1 )
                 ]
 
         testOutside name position =
             test name
                 <| assert
-                <| C3D.isOutside (Vec3.fromTuple position) hull
+                <| C3D.isOutside (vec3FromTuple position) hull
 
         testInside name position =
             test name
                 <| assert
-                <| C3D.isInside (Vec3.fromTuple position) hull
+                <| C3D.isInside (vec3FromTuple position) hull
     in
         suite
             "Two-faced hull"
@@ -260,6 +260,16 @@ vec2FromTuple ( x, y ) =
 vec2 : Float -> Float -> C2D.Vector
 vec2 x y =
     { x = x, y = y }
+
+
+vec3FromTuple : ( Float, Float, Float ) -> C3D.Vector
+vec3FromTuple ( x, y, z ) =
+    { x = x, y = y, z = z }
+
+
+vec3 : Float -> Float -> Float -> C3D.Vector
+vec3 x y z =
+    { x = x, y = y, z = z }
 
 
 
