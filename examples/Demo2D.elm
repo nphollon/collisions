@@ -5,7 +5,6 @@ import Graphics.Element as Element
 import Graphics.Collage as Collage
 import Mouse
 import Text
-import String
 import Vec2
 import Collision2D
 
@@ -40,6 +39,7 @@ theShapes =
     ]
 
 
+scale : number
 scale =
     150
 
